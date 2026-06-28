@@ -1,0 +1,153 @@
+/* ── Web Vitals Overlay — monospace draggable panel ── */
+#wvl {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 9999;
+  width: 256px;
+  font-family: "SF Mono","Fira Code",Consolas,monospace;
+  font-size: 0; /* prevents gap from white-space in HTML */
+  background: rgba(9,11,19,0.94);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 1px rgba(99,102,241,0.08),
+    0 8px 32px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Header ── */
+#wvl-hd {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem .875rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,.2);
+}
+
+#wvl-title {
+  font-size: .675rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  flex: 1;
+}
+
+#wvl-pg-badge {
+  font-size: .585rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: .15rem .5rem;
+  border-radius: 4px;
+}
+
+.wvl-badge-bad  { background: rgba(239,68,68,.18);  color: #f87171; border: 1px solid rgba(239,68,68,.3); }
+.wvl-badge-good { background: rgba(34,197,94,.18);  color: #4ade80; border: 1px solid rgba(34,197,94,.3); }
+.wvl-badge-dash { background: rgba(99,102,241,.18); color: #a5b4fc; border: 1px solid rgba(99,102,241,.3); }
+
+#wvl-min {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.4);
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: .8rem;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+#wvl-min:hover { background: rgba(255,255,255,.12); color: rgba(255,255,255,.8); }
+
+/* ── Metric rows ── */
+#wvl-body { padding: .3rem 0; }
+
+.wvl-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 58px;
+  align-items: center;
+  gap: .5rem;
+  padding: .35rem .875rem;
+  transition: background .12s;
+}
+.wvl-row:hover { background: rgba(255,255,255,.025); }
+
+.wvl-name {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.3);
+  text-transform: uppercase;
+  transition: color .3s;
+}
+
+.wvl-track {
+  height: 3px;
+  background: rgba(255,255,255,.07);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.wvl-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  transition: width .6s ease, background-color .4s ease;
+  background: rgba(255,255,255,.15);
+}
+
+.wvl-val {
+  font-size: .7rem;
+  font-weight: 700;
+  text-align: right;
+  color: rgba(255,255,255,.25);
+  transition: color .3s;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Rating colours ── */
+.wvl-fill-good    { background: #22c55e; }
+.wvl-fill-ni      { background: #f59e0b; }
+.wvl-fill-poor    { background: #ef4444; }
+.wvl-fill-pending { background: rgba(255,255,255,.1); }
+
+.wvl-c-good    { color: #4ade80; }
+.wvl-c-ni      { color: #fbbf24; }
+.wvl-c-poor    { color: #f87171; }
+.wvl-c-pending { color: rgba(255,255,255,.2); }
+
+.wvl-row-good    .wvl-name { color: rgba(74,222,128,.55); }
+.wvl-row-ni      .wvl-name { color: rgba(251,191,36,.55); }
+.wvl-row-poor    .wvl-name { color: rgba(248,113,113,.55); }
+
+/* ── Legend ── */
+#wvl-legend {
+  display: flex;
+  gap: .75rem;
+  padding: .4rem .875rem .55rem;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+
+#wvl-legend span {
+  font-size: .58rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.leg-g { color: rgba(34,197,94,.6); }
+.leg-n { color: rgba(245,158,11,.6); }
+.leg-p { color: rgba(239,68,68,.6); }

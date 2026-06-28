@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Images — Good | Web Vitals Lab</title>
+  <!-- ✓ Preconnect to image CDN — saves DNS + TLS RTT -->
+  <link rel="preconnect" href="https://picsum.photos">
+  <link rel="dns-prefetch" href="https://picsum.photos">
+  <!-- ✓ Preload LCP candidate — highest-priority fetch before any img tag is parsed -->
+  <link rel="preload" as="image" href="https://picsum.photos/seed/imggood0/1200/480" fetchpriority="high">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+  <style>
+    /* ✓ Hero as <img> — preloadable, measured by LCP */
+    .hero-img {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      border-radius: var(--radius);
+      display: block;
+      background: var(--bg-surf); /* skeleton color while loading */
+    }
+
+    /* ✓ Aspect-ratio wrapper reserves space before image loads → CLS = 0 */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .75rem;
+    }
+    .product-card { background: var(--bg-surf); border-radius: var(--rsm); overflow: hidden; }
+    .product-img-wrap {
+      aspect-ratio: 4 / 3;
+      background: var(--bg-card);
+      overflow: hidden;
+    }
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .product-card-body { padding: .75rem; }
+    .product-card-title { font-size: .875rem; font-weight: 600; margin-bottom: .25rem; }
+    .product-card-price { font-size: .8rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Images</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">LCP</span>
+      <span class="impact-tag down">CLS</span>
+      <span class="impact-tag down">TBT</span>
+    </div>
+  </div>
+  <h1>Optimised Image Loading</h1>
+  <p class="page-desc">Preloaded <code>&lt;img&gt;</code> hero for immediate LCP, aspect-ratio wrappers on every product card to prevent layout shift, lazy loading + async decoding on below-fold images, and a srcset for responsive sizes.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+
+    <!-- ✓ Hero as <img>: preloaded in <head>, fetchpriority=high, explicit dimensions -->
+    <img
+      class="hero-img"
+      src="https://picsum.photos/seed/imggood0/1200/480"
+      width="1200" height="480"
+      fetchpriority="high"
+      alt="Hero image — LCP candidate, preloaded"
+    >
+
+    <!-- ✓ Product images: aspect-ratio wrapper + lazy + decoding=async -->
+    <div class="product-grid">
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img
+            src="https://picsum.photos/seed/imggood1/400/300"
+            width="400" height="300"
+            decoding="async"
+            alt="Product 1"
+          >
+        </div>
+        <div class="product-card-body"><div class="product-card-title">Product One</div><div class="product-card-price">$49.99</div></div>
+      </div>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img
+            src="https://picsum.photos/seed/imggood2/400/300"
+            width="400" height="300"
+            loading="lazy" decoding="async"
+            alt="Product 2"
+          >
+        </div>
+        <div class="product-card-body"><div class="product-card-title">Product Two</div><div class="product-card-price">$79.99</div></div>
+      </div>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img
+            src="https://picsum.photos/seed/imggood3/400/300"
+            width="400" height="300"
+            loading="lazy" decoding="async"
+            alt="Product 3"
+          >
+        </div>
+        <div class="product-card-body"><div class="product-card-title">Product Three</div><div class="product-card-price">$29.99</div></div>
+      </div>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img
+            src="https://picsum.photos/seed/imggood4/400/300"
+            width="400" height="300"
+            loading="lazy" decoding="async"
+            alt="Product 4"
+          >
+        </div>
+        <div class="product-card-body"><div class="product-card-title">Product Four</div><div class="product-card-price">$99.99</div></div>
+      </div>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img
+            src="https://picsum.photos/seed/imggood5/400/300"
+            width="400" height="300"
+            loading="lazy" decoding="async"
+            alt="Product 5"
+          >
+        </div>
+        <div class="product-card-body"><div class="product-card-title">Product Five</div><div class="product-card-price">$59.99</div></div>
+      </div>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img
+            src="https://picsum.photos/seed/imggood6/400/300"
+            width="400" height="300"
+            loading="lazy" decoding="async"
+            alt="Product 6"
+          >
+        </div>
+        <div class="product-card-body"><div class="product-card-title">Product Six</div><div class="product-card-price">$39.99</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓"><code>&lt;link rel="preload" as="image"&gt;</code> + <code>fetchpriority="high"</code> on the hero — browser fetches it at top priority before parsing the body.</li>
+        <li data-i="✓">Hero is an <code>&lt;img&gt;</code> — the LCP algorithm can measure it; a CSS background can't be an LCP candidate.</li>
+        <li data-i="✓"><code>aspect-ratio: 4/3</code> wrapper on each card — exact space reserved before bytes arrive, CLS = 0.</li>
+        <li data-i="✓"><code>loading="lazy"</code> + <code>decoding="async"</code> on below-fold images — first two load eagerly for LCP, rest load on scroll.</li>
+        <li data-i="✓"><code>preconnect</code> to picsum.photos — DNS + TLS done before any image request fires.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→">CSS background-image hero → <code>&lt;img fetchpriority="high"&gt;</code></li>
+        <li data-i="→">No dimensions → <code>width/height</code> attrs + <code>aspect-ratio</code> wrapper</li>
+        <li data-i="→">All eager → first: eager, rest: <code>loading="lazy"</code></li>
+        <li data-i="→">No preload → <code>&lt;link rel="preload" as="image"&gt;</code></li>
+        <li data-i="→">No preconnect → <code>&lt;link rel="preconnect"&gt;</code> in <code>&lt;head&gt;</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ The Good Code</div>
+    <div class="code-block">&lt;!-- ✓ Preconnect + preload in &lt;head&gt; --&gt;
+&lt;link rel="preconnect" href="https://picsum.photos"&gt;
+&lt;link rel="preload" as="image"
+  href="https://picsum.photos/seed/hero/1200/480"
+  fetchpriority="high"&gt;
+
+&lt;!-- ✓ Hero: img (not background-image), high priority --&gt;
+&lt;img src="https://picsum.photos/seed/hero/1200/480"
+  width="1200" height="480"
+  fetchpriority="high" alt="Hero"&gt;
+
+&lt;!-- ✓ Product: aspect-ratio wrapper prevents CLS --&gt;
+&lt;div style="aspect-ratio: 4/3; overflow: hidden"&gt;
+  &lt;img src="product.jpg" width="400" height="300"
+    loading="lazy" decoding="async" alt="..."&gt;
+&lt;/div&gt;</div>
+  </div>
+
+</main>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

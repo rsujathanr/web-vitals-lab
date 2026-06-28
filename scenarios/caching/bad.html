@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caching — Bad | Web Vitals Lab</title>
+  <!-- ✕ Instruct browser/CDN to never cache this HTML -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Caching</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn active-bad">✕ Bad</a>
+    <a href="good.html" class="toggle-btn">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-bad">BAD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag">TTFB</span>
+      <span class="impact-tag">LCP</span>
+    </div>
+  </div>
+  <h1>No-Store, Cache-Busted, Short-Lived Assets</h1>
+  <p class="page-desc">Every visit is a cold start. <code>no-store</code> on HTML, cache-busting query strings on JS/CSS (so browsers never reuse them), and <code>max-age=60</code> on images mean every user — including returning ones — downloads everything from scratch.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo — Visit Counter</div>
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.7">
+      Reload this page. Because of <code>no-store</code> and cache-busted URLs, every reload re-downloads everything. Compare with <a href="good.html">good.html</a> where reloads show "(disk cache)".
+    </p>
+
+    <div class="row" style="margin-bottom:1.5rem">
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+        <div id="visit-count" style="font-size:2rem;font-weight:800;color:#f87171">0</div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Visits this session</div>
+      </div>
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+        <div style="font-size:2rem;font-weight:800;color:#f87171">0%</div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Cache hit rate (always 0)</div>
+      </div>
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+        <div style="font-size:2rem;font-weight:800;color:#f87171" id="wasted">—</div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Images re-downloaded</div>
+      </div>
+    </div>
+
+    <!-- ✕ Cache-busted image URLs — unique per page load, always re-download -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem" id="img-grid"></div>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-label">Asset Cache Header Table</div>
+    <table class="cache-table">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Filename</th>
+          <th>Cache-Control</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HTML</td>
+          <td><code>index.html</code></td>
+          <td><span class="tag-bad">no-store, no-cache</span></td>
+          <td><span class="tag-bad">Full re-download every visit</span></td>
+        </tr>
+        <tr>
+          <td>JavaScript</td>
+          <td><code>app.js?v=1732</code></td>
+          <td><span class="tag-bad">no-store</span></td>
+          <td><span class="tag-bad">Re-downloads; version query ignored</span></td>
+        </tr>
+        <tr>
+          <td>CSS</td>
+          <td><code>styles.css?v=1732</code></td>
+          <td><span class="tag-bad">no-store</span></td>
+          <td><span class="tag-bad">Re-downloads every visit</span></td>
+        </tr>
+        <tr>
+          <td>Images</td>
+          <td><code>hero.jpg?bust=1732xxx</code></td>
+          <td><span class="tag-bad">max-age=60</span></td>
+          <td><span class="tag-bad">Expires in 60s, re-downloaded</span></td>
+        </tr>
+        <tr>
+          <td>API responses</td>
+          <td><code>/api/products</code></td>
+          <td><span class="tag-bad">no-cache, no-store</span></td>
+          <td><span class="tag-bad">Full round-trip every time</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>❌ What's wrong</h3>
+      <ul>
+        <li data-i="⛔"><code>no-store</code> on HTML — browser deletes the response immediately after rendering. Every visit downloads the full HTML document again.</li>
+        <li data-i="⛔">JS/CSS loaded with <code>?v=timestamp</code> query — the filename changes every deploy, so CDN can't cache them permanently. Also served with <code>no-store</code>.</li>
+        <li data-i="⛔">Images cache for only 60 seconds — a user who reads an article for 2 minutes will re-download all images on the same page.</li>
+        <li data-i="⛔">No service worker — offline visits or flaky networks get nothing.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>✅ How to fix → <a href="good.html" style="font-weight:400;font-size:.85em">good.html</a></h3>
+      <ul>
+        <li data-i="✓">HTML: <code>no-cache</code> (not <code>no-store</code>) + ETag — browser revalidates but gets 304 if unchanged (zero bytes).</li>
+        <li data-i="✓">JS/CSS: content-hash filenames (<code>app.a3f9c2.js</code>) + <code>max-age=31536000, immutable</code> — cached forever, invalidated by filename change.</li>
+        <li data-i="✓">Images: <code>max-age=86400, stale-while-revalidate=604800</code> — cached 1 day, stale for 7 days while refreshing in background.</li>
+        <li data-i="✓">Service worker: cache-first for static assets, stale-while-revalidate for API responses.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✕ The Bad Code</div>
+    <div class="code-block"># ✕ HTML: browser never caches
+Cache-Control: no-store, no-cache, must-revalidate
+
+# ✕ JS/CSS with timestamp query string — CDN can't cache permanently
+&lt;script src="app.js?v=1732456789"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="styles.css?v=1732456789"&gt;
+# And the header:
+Cache-Control: no-store
+
+# ✕ Images: expire after 60 seconds
+Cache-Control: max-age=60
+
+# ✕ Images with cache-busting query strings
+&lt;img src="hero.jpg?bust=1732456789345"&gt;</div>
+  </div>
+
+</main>
+
+<script>
+  var count = parseInt(sessionStorage.getItem('badCacheVisits') || '0') + 1;
+  sessionStorage.setItem('badCacheVisits', count);
+  document.getElementById('visit-count').textContent = count;
+
+  // ✕ Cache-bust images — unique URL per page load → always re-download
+  var ts = Date.now();
+  var grid = document.getElementById('img-grid');
+  var seeds = ['cachebad1','cachebad2','cachebad3'];
+  var imgs = 0;
+
+  seeds.forEach(function(seed, i) {
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'aspect-ratio:4/3;background:var(--bg-surf);border-radius:var(--rsm);overflow:hidden';
+    var img = document.createElement('img');
+    // ✕ Unique URL per load — browser can never serve from cache
+    img.src = 'https://picsum.photos/seed/' + seed + '/400/300?bust=' + (ts + i);
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+    img.alt = 'Image ' + (i + 1) + ' (cache-busted)';
+    img.onload = function() {
+      imgs++;
+      document.getElementById('wasted').textContent = imgs + '/3';
+    };
+    wrap.appendChild(img);
+    grid.appendChild(wrap);
+  });
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout Stability — Bad | Web Vitals Lab</title>
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+  <style>
+    /* ✕ Product images have no dimensions — height is 0 until loaded */
+    .product-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+    .product-card { background:var(--bg-surf); border-radius:var(--rsm); overflow:hidden; }
+    .product-card img { width:100%; } /* ✕ no height, no aspect-ratio */
+    .product-card-body { padding:.75rem; font-size:.875rem; }
+
+    /* ✕ Ad slot starts at 0 height — will expand to 90px, shifting content down */
+    #ad-slot { border-radius:var(--rsm); overflow:hidden; }
+
+    /* ✕ Cookie banner: position:static — will push content up from bottom */
+    #cookie-banner {
+      background: #1e1a3a;
+      border-top: 1px solid rgba(99,102,241,.3);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: .875rem;
+    }
+    #cookie-banner button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--rsm);
+      padding: .4rem .9rem;
+      cursor: pointer;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Layout Stability</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn active-bad">✕ Bad</a>
+    <a href="good.html" class="toggle-btn">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-bad">BAD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag">CLS</span>
+    </div>
+  </div>
+  <h1>Three CLS Events in Five Seconds</h1>
+  <p class="page-desc">Product images load with no dimensions (CLS event 1). An ad slot starts at 0px and expands to 90px after 1.5s (CLS event 2). A cookie banner slides up from below after 2s and pushes all page content upward (CLS event 3).</p>
+</div>
+
+<main class="scenario-main">
+
+  <!-- CLS counter -->
+  <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <div class="pill-stat bad-stat" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+      <div class="pill-stat-val" id="cls-display" style="font-size:1.5rem;font-weight:800;color:#f87171">0.000</div>
+      <div class="pill-stat-lbl" style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Cumulative Layout Shift</div>
+    </div>
+    <div class="pill-stat bad-stat" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+      <div class="pill-stat-val" id="event-count" style="font-size:1.5rem;font-weight:800;color:#f87171">0</div>
+      <div class="pill-stat-lbl" style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Layout shift events</div>
+    </div>
+    <div class="pill-stat bad-stat" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+      <div class="pill-stat-val" id="next-event" style="font-size:1.5rem;font-weight:800;color:#f87171">—</div>
+      <div class="pill-stat-lbl" style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Next shift event</div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo — watch the page jump</div>
+
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.7">
+      ① Images below have no <code>width</code>/<code>height</code> — they cause shift as they load.
+      ② An ad slot expands from 0→90px at <strong style="color:#f87171">1.5s</strong>.
+      ③ A cookie banner pushes content at <strong style="color:#f87171">2s</strong>.
+    </p>
+
+    <!-- ✕ Product images: no dimensions → CLS event #1 -->
+    <div class="product-grid" style="margin-bottom:1rem">
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/cls1a/400/300" alt="Product 1">
+        <div class="product-card-body"><strong>Product One</strong><br><span style="color:var(--text-muted)">$49.99</span></div>
+      </div>
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/cls1b/400/300" alt="Product 2">
+        <div class="product-card-body"><strong>Product Two</strong><br><span style="color:var(--text-muted)">$79.99</span></div>
+      </div>
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/cls1c/400/300" alt="Product 3">
+        <div class="product-card-body"><strong>Product Three</strong><br><span style="color:var(--text-muted)">$29.99</span></div>
+      </div>
+    </div>
+
+    <!-- ✕ Ad slot starts at 0px height — expands to 90px after 1500ms -->
+    <div id="ad-slot" style="background:rgba(99,102,241,.06);border:1px dashed rgba(99,102,241,.2);height:0;overflow:hidden;margin-bottom:1rem;transition:height .1s">
+      <div style="display:flex;align-items:center;justify-content:center;height:90px;font-size:.8125rem;color:var(--text-muted)">
+        ADVERTISEMENT — injected after 1.5s (CLS event #2)
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:.875rem;line-height:1.7">
+      This text sits below the ad slot. When the ad expands at 1.5s, this text jumps down.
+      When the cookie banner appears at 2s, everything jumps again. Watch the CLS counter above spike.
+    </p>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>❌ What's wrong</h3>
+      <ul>
+        <li data-i="⛔">Images have no <code>width</code>/<code>height</code> — browser reserves 0px, then expands when the image loads, pushing all content below.</li>
+        <li data-i="⛔">Ad slot starts at <code>height: 0</code> — when JS expands it to 90px, everything below shifts down (large CLS event).</li>
+        <li data-i="⛔">Cookie banner uses <code>position: static</code> flow — when it appears, it pushes page content upward.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>✅ How to fix → <a href="good.html" style="font-weight:400;font-size:.85em">good.html</a></h3>
+      <ul>
+        <li data-i="✓">Add <code>width</code>/<code>height</code> + <code>aspect-ratio</code> wrapper on every image — exact space reserved before bytes arrive.</li>
+        <li data-i="✓">Give the ad slot <code>min-height: 90px</code> from the start — filling it never changes the layout.</li>
+        <li data-i="✓">Use <code>position: fixed</code> for the cookie banner — overlays the page without shifting flow content.</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<!-- ✕ Cookie banner injected into page flow after 2000ms → CLS event #3 -->
+<div id="cookie-wrap"></div>
+
+<script>
+  var clsTotal = 0;
+  var events   = 0;
+
+  // Track layout shifts via PerformanceObserver
+  try {
+    new PerformanceObserver(function(list) {
+      list.getEntries().forEach(function(e) {
+        if (!e.hadRecentInput) {
+          clsTotal += e.value;
+          events++;
+          document.getElementById('cls-display').textContent  = clsTotal.toFixed(3);
+          document.getElementById('event-count').textContent  = events;
+        }
+      });
+    }).observe({ type: 'layout-shift', buffered: true });
+  } catch(err) {}
+
+  // ✕ CLS event #2: ad slot expands 0→90px after 1500ms
+  document.getElementById('next-event').textContent = 'Ad in 1.5s';
+  setTimeout(function() {
+    document.getElementById('ad-slot').style.height = '90px';
+    document.getElementById('next-event').textContent = 'Cookie in 0.5s';
+  }, 1500);
+
+  // ✕ CLS event #3: cookie banner appended to page flow after 2000ms
+  setTimeout(function() {
+    var wrap = document.getElementById('cookie-wrap');
+    wrap.innerHTML = '<div id="cookie-banner">' +
+      '<span>We use cookies to improve your experience on our site.</span>' +
+      '<button onclick="this.parentElement.parentElement.innerHTML=\'\'">Accept</button>' +
+      '</div>';
+    document.getElementById('next-event').textContent = 'Done';
+  }, 2000);
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

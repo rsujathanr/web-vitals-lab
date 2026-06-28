@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fonts — Good | Web Vitals Lab</title>
+
+  <!-- ✓ Preconnect to both Google Font servers (with crossorigin for gstatic) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- ✓ Only 2 weights, display=swap — FOUT not FOIT -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:wght@400;700&display=swap">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+  <style>
+    /* ✓ Size-adjusted fallback font for Inter — reduces CLS on font swap */
+    @font-face {
+      font-family: 'Inter Fallback';
+      src: local('Arial');
+      /* Metrics tuned to match Inter's visual size */
+      size-adjust: 107%;
+      ascent-override: 90%;
+      descent-override: 22%;
+      line-gap-override: 0%;
+    }
+
+    /* ✓ Size-adjusted fallback font for Playfair Display */
+    @font-face {
+      font-family: 'Playfair Fallback';
+      src: local('Georgia');
+      /* Tuned so Georgia visually matches Playfair's proportions */
+      size-adjust: 115%;
+      ascent-override: 95%;
+      descent-override: 25%;
+      line-gap-override: 0%;
+    }
+
+    /* ✓ Font stacks: web font → adjusted fallback → generic */
+    body  { font-family: 'Inter', 'Inter Fallback', Arial, sans-serif; }
+    .serif { font-family: 'Playfair Display', 'Playfair Fallback', Georgia, serif; }
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Fonts</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">CLS</span>
+      <span class="impact-tag down">FCP</span>
+      <span class="impact-tag down">LCP</span>
+    </div>
+  </div>
+  <h1>display=swap, Preconnect &amp; Metric-Adjusted Fallbacks</h1>
+  <p class="page-desc">Two weights only (400 + 700). <code>display=swap</code> keeps text visible at all times. Preconnect to both Google Font servers. Custom <code>@font-face</code> fallbacks with <code>size-adjust</code> and metric overrides to minimize CLS when the web font swaps in.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo — text is always visible, even before fonts load</div>
+
+    <!-- ✓ Only the 2 weights actually used in the design -->
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+      <div><span style="font-weight:400;font-size:1.25rem">Inter weight 400 — Regular (only weight needed for body text)</span></div>
+      <div><span style="font-weight:700;font-size:1.25rem">Inter weight 700 — Bold (only weight needed for headings)</span></div>
+    </div>
+
+    <hr style="margin:1.25rem 0;border-color:var(--border)">
+
+    <!-- ✓ Playfair with fallback metric tuning — near-zero CLS on swap -->
+    <p class="serif" style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem">
+      Playfair Display — The quick brown fox
+    </p>
+    <p class="serif" style="font-size:1rem;color:var(--text-muted);line-height:1.8">
+      This paragraph uses Playfair Display. The fallback font (Georgia) has been size-adjusted to match Playfair's metrics, so when the web font swapped in, the text barely moved — CLS is near zero.
+    </p>
+
+    <!-- Font loading status indicator -->
+    <div style="margin-top:1rem;padding:.75rem;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--rsm)">
+      <div style="font-size:.8125rem;font-weight:600;color:#4ade80;margin-bottom:.25rem" id="font-status">Checking font status…</div>
+      <div style="font-size:.75rem;color:var(--text-muted)" id="font-detail"></div>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓"><code>display=swap</code> — text is readable immediately using the fallback font; the web font swaps in silently when ready (FOUT not FOIT).</li>
+        <li data-i="✓"><code>preconnect</code> to fonts.googleapis.com and fonts.gstatic.com (with <code>crossorigin</code>) — DNS + TLS done before CSS is parsed.</li>
+        <li data-i="✓">Only 2 weights loaded — 7× fewer font file requests, much lower TTFB pressure.</li>
+        <li data-i="✓"><code>@font-face</code> with <code>size-adjust: 107%</code> + metric overrides on the Arial fallback for Inter — text barely moves when the font swaps.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→">9 weights → 2 weights</li>
+        <li data-i="→"><code>display=block</code> (FOIT) → <code>display=swap</code> (FOUT)</li>
+        <li data-i="→">No preconnect → preconnect to both GFonts servers</li>
+        <li data-i="→">No fallback tuning → <code>size-adjust</code> + metric overrides</li>
+        <li data-i="→">Significant CLS on font swap → near-zero CLS</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ The Good Code</div>
+    <div class="code-block">&lt;!-- ✓ Preconnect to both GFonts servers --&gt;
+&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;
+
+&lt;!-- ✓ 2 weights only, display=swap --&gt;
+&lt;link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?
+    family=Inter:wght@400;700
+    &amp;family=Playfair+Display:wght@400;700
+    &amp;display=swap"&gt;
+
+/* ✓ Size-adjusted fallback — near-zero CLS on swap */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+body {
+  font-family: 'Inter', 'Inter Fallback', Arial, sans-serif;
+}</div>
+  </div>
+
+</main>
+
+<script defer>
+  document.fonts.ready.then(function () {
+    var status = document.getElementById('font-status');
+    var detail = document.getElementById('font-detail');
+    var loaded = [];
+    document.fonts.forEach(function(f) {
+      if (f.status === 'loaded') loaded.push(f.family + ' ' + f.weight);
+    });
+    status.textContent = '✓ Web fonts loaded — ' + loaded.length + ' font faces';
+    detail.textContent = loaded.slice(0, 4).join(', ') + (loaded.length > 4 ? '…' : '');
+  });
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Vitals Lab</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<!-- ── Sticky nav ── -->
+<nav class="dash-nav">
+  <a href="#" class="dash-nav-logo">⚡ <span>Web Vitals</span> Lab</a>
+  <div class="dash-nav-links">
+    <a class="dash-nav-link" href="#scenarios">Scenarios</a>
+    <a class="dash-nav-link" href="#measure">How to Measure</a>
+    <a class="dash-nav-link" href="https://web.dev/metrics/" target="_blank" rel="noopener">Docs ↗</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<header class="dash-hero">
+  <div class="hero-eyebrow">⚡ Performance Lab</div>
+  <h1>Web Vitals Lab</h1>
+  <p>Eight interactive performance scenarios. Each shows a bad pattern and a good pattern side-by-side, with live Core Web Vitals measured in the browser using the web-vitals library.</p>
+</header>
+
+<!-- ── Vitals strip ── -->
+<div class="vitals-strip">
+  <div class="vital-cell">
+    <div class="vital-abbr">LCP</div>
+    <div class="vital-name">Largest Contentful Paint</div>
+    <div class="vital-thresholds">
+      <span class="vt vt-good">≤2.5s</span>
+      <span class="vt vt-poor">&gt;4s</span>
+    </div>
+  </div>
+  <div class="vital-cell">
+    <div class="vital-abbr">INP</div>
+    <div class="vital-name">Interaction to Next Paint</div>
+    <div class="vital-thresholds">
+      <span class="vt vt-good">≤200ms</span>
+      <span class="vt vt-poor">&gt;500ms</span>
+    </div>
+  </div>
+  <div class="vital-cell">
+    <div class="vital-abbr">CLS</div>
+    <div class="vital-name">Cumulative Layout Shift</div>
+    <div class="vital-thresholds">
+      <span class="vt vt-good">≤0.1</span>
+      <span class="vt vt-poor">&gt;0.25</span>
+    </div>
+  </div>
+  <div class="vital-cell">
+    <div class="vital-abbr">FCP</div>
+    <div class="vital-name">First Contentful Paint</div>
+    <div class="vital-thresholds">
+      <span class="vt vt-good">≤1.8s</span>
+      <span class="vt vt-poor">&gt;3s</span>
+    </div>
+  </div>
+  <div class="vital-cell">
+    <div class="vital-abbr">TTFB</div>
+    <div class="vital-name">Time to First Byte</div>
+    <div class="vital-thresholds">
+      <span class="vt vt-good">≤800ms</span>
+      <span class="vt vt-poor">&gt;1.8s</span>
+    </div>
+  </div>
+  <div class="vital-cell">
+    <div class="vital-abbr">TBT</div>
+    <div class="vital-name">Total Blocking Time</div>
+    <div class="vital-thresholds">
+      <span class="vt vt-good">≤200ms</span>
+      <span class="vt vt-poor">&gt;600ms</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scenarios ── -->
+<p class="section-heading" id="scenarios">Scenarios</p>
+
+<div class="scenario-grid" id="grid">
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">🖼</div>
+    <div class="sc-title">Images</div>
+    <div class="sc-desc">CSS background-image hero, images missing dimensions, no lazy loading, no srcset — the easiest way to tank LCP and cause layout shift.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">LCP</span>
+      <span class="sc-tag">CLS</span>
+      <span class="sc-tag">TBT</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/images/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/images/good.html">✓ Good</a>
+    </div>
+  </div>
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">⚙️</div>
+    <div class="sc-title">JavaScript</div>
+    <div class="sc-desc">Render-blocking scripts, synchronous busy-loops on startup and input events — the full recipe for poor FCP, TBT, and catastrophic INP.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">FCP</span>
+      <span class="sc-tag">TBT</span>
+      <span class="sc-tag">INP</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/javascript/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/javascript/good.html">✓ Good</a>
+    </div>
+  </div>
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">🎨</div>
+    <div class="sc-title">CSS</div>
+    <div class="sc-desc">Multiple render-blocking stylesheets, layout-thrashing animations, and hundreds of unused rules delay paint and cause jank every frame.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">FCP</span>
+      <span class="sc-tag">LCP</span>
+      <span class="sc-tag">TBT</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/css/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/css/good.html">✓ Good</a>
+    </div>
+  </div>
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">✏️</div>
+    <div class="sc-title">Fonts</div>
+    <div class="sc-desc">Loading all nine weights of a typeface with display=block makes text invisible for seconds. No preconnect means extra RTTs before any font byte arrives.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">CLS</span>
+      <span class="sc-tag">FCP</span>
+      <span class="sc-tag">LCP</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/fonts/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/fonts/good.html">✓ Good</a>
+    </div>
+  </div>
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">📐</div>
+    <div class="sc-title">Layout Stability</div>
+    <div class="sc-desc">Images with no dimensions, an ad slot that pops open 1.5 s after load, and a cookie banner that shoves the page up all conspire to spike CLS.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">CLS</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/layout-stability/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/layout-stability/good.html">✓ Good</a>
+    </div>
+  </div>
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">🌐</div>
+    <div class="sc-title">Network</div>
+    <div class="sc-desc">No preconnect, no resource hints, no priority signals — every origin pays the full DNS + TCP + TLS toll before a single byte arrives.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">TTFB</span>
+      <span class="sc-tag">LCP</span>
+      <span class="sc-tag">FCP</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/network/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/network/good.html">✓ Good</a>
+    </div>
+  </div>
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">💾</div>
+    <div class="sc-title">Caching</div>
+    <div class="sc-desc">Cache-busted filenames, no-store headers on static assets, and max-age=60 on images mean every visit is a cold start — returning users suffer the same as new ones.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">TTFB</span>
+      <span class="sc-tag">LCP</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/caching/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/caching/good.html">✓ Good</a>
+    </div>
+  </div>
+
+  <div class="sc-card" onmousemove="glow(event,this)">
+    <div class="sc-icon">🔌</div>
+    <div class="sc-title">Third-Party</div>
+    <div class="sc-desc">Sync analytics scripts in &lt;head&gt;, an eagerly-loaded YouTube iframe, and an immediately-injected chat widget block the main thread before the user sees anything.</div>
+    <div class="sc-tags">
+      <span class="sc-tag">TBT</span>
+      <span class="sc-tag">FCP</span>
+      <span class="sc-tag">LCP</span>
+      <span class="sc-tag">INP</span>
+    </div>
+    <div class="sc-links">
+      <a class="sc-link bad"  href="scenarios/third-party/bad.html">✕ Bad</a>
+      <a class="sc-link good" href="scenarios/third-party/good.html">✓ Good</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── How to Measure ── -->
+<section class="measure-section" id="measure">
+  <h2>How to Measure</h2>
+  <div class="measure-grid">
+
+    <div class="measure-card">
+      <div class="measure-icon">🔦</div>
+      <div class="measure-title">Lighthouse</div>
+      <div class="measure-desc">Run a simulated load audit from DevTools → Lighthouse panel. Scores LCP, TBT (proxy for FID/INP), CLS, FCP, and Speed Index under throttled 4G.</div>
+      <a class="measure-link" href="https://developer.chrome.com/docs/lighthouse/overview/" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+
+    <div class="measure-card">
+      <div class="measure-icon">📊</div>
+      <div class="measure-title">DevTools Performance</div>
+      <div class="measure-desc">Record a trace to see the exact millisecond each frame paints, long tasks on the main thread, layout shifts, and the LCP candidate.</div>
+      <a class="measure-link" href="https://developer.chrome.com/docs/devtools/performance/" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+
+    <div class="measure-card">
+      <div class="measure-icon">📄</div>
+      <div class="measure-title">PageSpeed Insights</div>
+      <div class="measure-desc">Combines real-user data from the Chrome User Experience Report (CrUX) with a lab Lighthouse run — see your field vs lab scores side by side.</div>
+      <a class="measure-link" href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Open PSI ↗</a>
+    </div>
+
+    <div class="measure-card">
+      <div class="measure-icon">📦</div>
+      <div class="measure-title">web-vitals.js</div>
+      <div class="measure-desc">The official library used in this lab. Call <code>onLCP()</code>, <code>onINP()</code>, <code>onCLS()</code> etc. to collect real-user metrics and send them to your analytics endpoint.</div>
+      <a class="measure-link" href="https://github.com/GoogleChrome/web-vitals" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="dash-footer">
+  <p>
+    Web Vitals Lab &mdash; vanilla HTML, CSS &amp; JS &mdash; metrics via
+    <a href="https://github.com/GoogleChrome/web-vitals" target="_blank" rel="noopener">web-vitals v4</a>.
+  </p>
+  <p style="margin-top:.35rem">
+    Reference: <a href="https://web.dev/metrics/" target="_blank" rel="noopener">web.dev/metrics</a>
+    &nbsp;·&nbsp;
+    <a href="https://web.dev/articles/vitals" target="_blank" rel="noopener">Core Web Vitals</a>
+    &nbsp;·&nbsp;
+    <a href="https://developer.chrome.com/docs/crux" target="_blank" rel="noopener">Chrome UX Report</a>
+  </p>
+</footer>
+
+<script>
+  function glow(e, card) {
+    var r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+    card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%');
+  }
+</script>
+</body>
+</html>

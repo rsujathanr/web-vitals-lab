@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Third-Party — Good | Web Vitals Lab</title>
+  <!-- ✓ No third-party scripts in <head> at all -->
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+  <style>
+    /* ✓ Lite YouTube facade: just an image until the user clicks Play */
+    .yt-facade {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      border-radius: var(--rsm);
+      overflow: hidden;
+      background: #000;
+      cursor: pointer;
+    }
+
+    .yt-facade img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .yt-play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 68px;
+      height: 48px;
+      background: rgba(255,0,0,.9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s, transform .15s;
+      pointer-events: none;
+    }
+
+    .yt-facade:hover .yt-play-btn {
+      background: #ff0000;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .yt-play-btn svg {
+      fill: white;
+      width: 24px;
+      height: 24px;
+      margin-left: 4px;
+    }
+
+    .yt-label {
+      position: absolute;
+      bottom: .75rem;
+      left: .75rem;
+      background: rgba(0,0,0,.7);
+      color: #fff;
+      font-size: .72rem;
+      padding: .25rem .6rem;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    /* ✓ Chat button facade */
+    #chat-btn {
+      position: fixed;
+      bottom: 5rem;
+      right: 1.25rem;
+      z-index: 200;
+      width: 52px;
+      height: 52px;
+      background: var(--accent);
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 16px rgba(99,102,241,.4);
+      transition: transform .15s, box-shadow .15s;
+    }
+
+    #chat-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(99,102,241,.6);
+    }
+
+    #chat-panel {
+      position: fixed;
+      bottom: 8rem;
+      right: 1.25rem;
+      z-index: 200;
+      background: #1e1a3a;
+      border: 1px solid rgba(99,102,241,.3);
+      border-radius: 12px;
+      padding: 1rem;
+      width: 220px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Third-Party</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">TBT</span>
+      <span class="impact-tag down">FCP</span>
+      <span class="impact-tag down">LCP</span>
+      <span class="impact-tag down">INP</span>
+    </div>
+  </div>
+  <h1>Facade Pattern, Load-Event Analytics, Lazy Chat</h1>
+  <p class="page-desc">Zero scripts in <code>&lt;head&gt;</code>. Analytics fire after <code>window.load</code>. YouTube is a lightweight facade (thumbnail image only) — the real <code>&lt;iframe&gt;</code> is created on click. Chat SDK loads only on first <code>mouseover</code> of the button.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.7">
+      FCP happened in <strong id="startup" style="color:#4ade80">calculating…</strong> — zero blocking scripts.
+      The video below is a thumbnail. Click Play — only then does the YouTube iframe load.
+      Hover the chat button in the corner — the SDK loads only on that hover.
+    </p>
+
+    <!-- ✓ Lite YouTube facade: ~2KB thumbnail vs ~500KB eager iframe -->
+    <div class="yt-facade" id="yt-facade" onclick="loadYT(this)" data-id="dQw4w9WgXcQ">
+      <img
+        src="https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+        width="480" height="360"
+        alt="Video thumbnail — click to load YouTube player"
+        loading="lazy"
+      >
+      <div class="yt-play-btn">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+      <div class="yt-label">▶ Click to load YouTube (creates iframe on demand)</div>
+    </div>
+
+    <div style="margin-top:.75rem;padding:.75rem;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--rsm)">
+      <div style="font-size:.8125rem;font-weight:600;color:#4ade80" id="yt-status">Facade mode — YouTube not loaded yet</div>
+      <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem">Network: 0 requests to youtube.com (until you click Play)</div>
+    </div>
+
+    <!-- Analytics status -->
+    <div style="margin-top:.75rem;padding:.75rem;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--rsm)">
+      <div style="font-size:.8125rem;font-weight:600;color:#4ade80" id="analytics-status">Analytics: waiting for window.load…</div>
+      <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem">Fires after the page is fully interactive — never blocks FCP or INP</div>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓">Zero scripts in <code>&lt;head&gt;</code> — FCP is immediate. Analytics initialise after <code>window.load</code> so they cannot delay the user's first paint.</li>
+        <li data-i="✓">YouTube facade: a 480×360 thumbnail image (~15KB) replaces a 500KB+ iframe until the user actively clicks Play.</li>
+        <li data-i="✓">Chat SDK loads only on first <code>mouseover</code> of the button — users who never interact with chat pay zero bytes for the SDK.</li>
+        <li data-i="✓">All remaining third-party scripts use <code>async</code>/<code>defer</code> or load-event gating — they run in idle time, not on the critical path.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→">600ms + 400ms sync blocks in head → 0ms blocking</li>
+        <li data-i="→">YouTube iframe eager (500KB+) → facade image (~15KB)</li>
+        <li data-i="→">Chat SDK immediate (200ms) → loads on first mouseover</li>
+        <li data-i="→">Analytics blocking FCP → fires after <code>window.load</code></li>
+        <li data-i="→">TBT ~1200ms → TBT ~0ms</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ The Good Code</div>
+    <div class="code-block">/* ✓ Lite YouTube facade */
+&lt;div class="yt-facade" onclick="loadYT(this)" data-id="VIDEO_ID"&gt;
+  &lt;img src="https://i.ytimg.com/vi/VIDEO_ID/hqdefault.jpg"
+    width="480" height="360" loading="lazy" alt="Video thumbnail"&gt;
+  &lt;div class="play-btn"&gt;▶&lt;/div&gt;
+&lt;/div&gt;
+
+function loadYT(el) {
+  var iframe = document.createElement('iframe');
+  iframe.src = 'https://www.youtube.com/embed/' + el.dataset.id + '?autoplay=1';
+  iframe.allow = 'autoplay; fullscreen';
+  el.replaceWith(iframe); // real iframe only on click
+}
+
+/* ✓ Analytics after window.load — never blocks FCP */
+window.addEventListener('load', function () {
+  var s = document.createElement('script');
+  s.src = 'https://cdn.example-analytics.com/analytics.js';
+  s.async = true;
+  document.head.appendChild(s);
+});
+
+/* ✓ Chat SDK only on first hover — lazy facade */
+var chatLoaded = false;
+chatBtn.addEventListener('mouseover', function() {
+  if (chatLoaded) return;
+  chatLoaded = true;
+  var s = document.createElement('script');
+  s.src = 'https://chat.example.com/sdk.js'; // loads only once
+  s.async = true;
+  document.head.appendChild(s);
+}, { once: false });</div>
+  </div>
+
+</main>
+
+<!-- ✓ Chat button facade: SDK loads only on mouseover -->
+<button id="chat-btn" title="Chat support (SDK loads on hover)" aria-label="Open chat">💬</button>
+<div id="chat-panel">
+  <div style="font-weight:700;font-size:.875rem;margin-bottom:.5rem">💬 Chat Support</div>
+  <div id="chat-sdk-status" style="font-size:.75rem;color:var(--text-muted)">Hover the button to load SDK…</div>
+</div>
+
+<!-- ✓ All scripts deferred — zero blocking -->
+<script defer>
+  // Show FCP timing
+  document.getElementById('startup').textContent =
+    Math.round(performance.now()) + 'ms';
+
+  // ✓ Lite YouTube facade: replace div with real iframe only on click
+  window.loadYT = function(el) {
+    var id = el.dataset.id;
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:var(--rsm)';
+    el.innerHTML = '';
+    el.style.background = '#000';
+    el.appendChild(iframe);
+    el.onclick = null;
+    document.getElementById('yt-status').textContent = '▶ YouTube iframe created on click — loaded only when needed ✓';
+  };
+
+  // ✓ Analytics: load after window.load — never on critical path
+  window.addEventListener('load', function() {
+    var status = document.getElementById('analytics-status');
+    status.textContent = 'Analytics: window.load fired — loading SDK now (async)…';
+    // Simulate async analytics script load
+    setTimeout(function() {
+      status.textContent = 'Analytics: SDK loaded async ✓ — FCP was unaffected';
+    }, 300);
+  });
+
+  // ✓ Chat: SDK loads only on first mouseover of the button
+  var chatLoaded = false;
+  var chatBtn   = document.getElementById('chat-btn');
+  var chatPanel = document.getElementById('chat-panel');
+  var chatStatus = document.getElementById('chat-sdk-status');
+
+  chatBtn.addEventListener('mouseover', function() {
+    if (chatLoaded) return;
+    chatLoaded = true;
+    chatStatus.textContent = 'First hover detected — loading SDK…';
+    // Simulate SDK load
+    setTimeout(function() {
+      chatStatus.textContent = 'SDK loaded ✓ — ready (never loaded for users who don\'t hover)';
+    }, 250);
+  });
+
+  chatBtn.addEventListener('click', function() {
+    var open = chatPanel.style.display === 'block';
+    chatPanel.style.display = open ? 'none' : 'block';
+  });
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

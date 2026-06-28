@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Images — Bad | Web Vitals Lab</title>
+  <!-- ✕ No preconnect to image CDN -->
+  <!-- ✕ No preload for LCP candidate -->
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+  <style>
+    /* ✕ Hero as CSS background-image — not discoverable by preload scanner */
+    .hero-bg {
+      width: 100%;
+      height: 320px;
+      background-image: url('https://picsum.photos/seed/imgbad0/1200/640');
+      background-size: cover;
+      background-position: center;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+    }
+    /* ✕ Product images: no width/height, no aspect-ratio → CLS */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .75rem;
+    }
+    .product-card { background: var(--bg-surf); border-radius: var(--rsm); overflow: hidden; }
+    /* ✕ img inside has no dimensions — height is 0 until loaded */
+    .product-card img { width: 100%; }
+    .product-card-body { padding: .75rem; }
+    .product-card-title { font-size: .875rem; font-weight: 600; margin-bottom: .25rem; }
+    .product-card-price { font-size: .8rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Images</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn active-bad">✕ Bad</a>
+    <a href="good.html" class="toggle-btn">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-bad">BAD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag">LCP</span>
+      <span class="impact-tag">CLS</span>
+      <span class="impact-tag">TBT</span>
+    </div>
+  </div>
+  <h1>Image Loading Anti-Patterns</h1>
+  <p class="page-desc">CSS background-image hero that the preload scanner can't find, six product images with no dimensions that cause layout shift as they load, no lazy loading, and no srcset — the most common image mistakes in production.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+
+    <!-- ✕ Hero as CSS background-image — browser cannot preload it -->
+    <div class="hero-bg" role="img" aria-label="Hero image"></div>
+
+    <!-- ✕ 6 product images: no width/height attributes — causes CLS -->
+    <div class="product-grid">
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/imgbad1/400/300" alt="Product 1">
+        <div class="product-card-body"><div class="product-card-title">Product One</div><div class="product-card-price">$49.99</div></div>
+      </div>
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/imgbad2/400/300" alt="Product 2">
+        <div class="product-card-body"><div class="product-card-title">Product Two</div><div class="product-card-price">$79.99</div></div>
+      </div>
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/imgbad3/400/300" alt="Product 3">
+        <div class="product-card-body"><div class="product-card-title">Product Three</div><div class="product-card-price">$29.99</div></div>
+      </div>
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/imgbad4/400/300" alt="Product 4">
+        <div class="product-card-body"><div class="product-card-title">Product Four</div><div class="product-card-price">$99.99</div></div>
+      </div>
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/imgbad5/400/300" alt="Product 5">
+        <div class="product-card-body"><div class="product-card-title">Product Five</div><div class="product-card-price">$59.99</div></div>
+      </div>
+      <div class="product-card">
+        <img src="https://picsum.photos/seed/imgbad6/400/300" alt="Product 6">
+        <div class="product-card-body"><div class="product-card-title">Product Six</div><div class="product-card-price">$39.99</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>❌ What's wrong</h3>
+      <ul>
+        <li data-i="⛔">Hero is a CSS <code>background-image</code> — the HTML preload scanner cannot discover it, so it starts downloading only after CSS is parsed.</li>
+        <li data-i="⛔">No <code>width</code>/<code>height</code> on product images — browser allocates 0px height, then reflowsafter each image loads (CLS spike).</li>
+        <li data-i="⛔">No <code>loading="lazy"</code> — all 6 images download eagerly, competing with the LCP candidate for bandwidth.</li>
+        <li data-i="⛔">No <code>srcset</code> — a 400px image on a 200px grid slot wastes 2× bandwidth.</li>
+        <li data-i="⛔">No <code>fetchpriority</code> — the browser can't tell which image is the LCP candidate.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>✅ How to fix → <a href="good.html" style="font-weight:400;font-size:.85em">good.html</a></h3>
+      <ul>
+        <li data-i="✓">Replace CSS background with <code>&lt;img&gt;</code> + <code>rel="preload"</code> + <code>fetchpriority="high"</code>.</li>
+        <li data-i="✓">Add explicit <code>width</code> and <code>height</code> attributes and <code>aspect-ratio</code> CSS on every image wrapper.</li>
+        <li data-i="✓">Add <code>loading="lazy"</code> + <code>decoding="async"</code> on below-fold images.</li>
+        <li data-i="✓">Add <code>srcset</code> for responsive sizes — serve 200px image in a 200px slot.</li>
+        <li data-i="✓">Add <code>preconnect</code> to picsum.photos to save one RTT.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✕ The Bad Code</div>
+    <div class="code-block">/* ✕ Hero unreachable by preload scanner */
+.hero-bg {
+  background-image: url('/hero.jpg');  /* discovered late! */
+}
+
+&lt;!-- ✕ No width/height → CLS on every image load --&gt;
+&lt;img src="product.jpg" alt="Product"&gt;
+
+&lt;!-- ✕ All eager, no priority, no srcset --&gt;
+&lt;img src="https://picsum.photos/seed/1/400/300"&gt;
+&lt;img src="https://picsum.photos/seed/2/400/300"&gt;
+&lt;img src="https://picsum.photos/seed/3/400/300"&gt;</div>
+  </div>
+
+</main>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

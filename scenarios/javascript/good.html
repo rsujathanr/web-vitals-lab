@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript — Good | Web Vitals Lab</title>
+  <!-- ✓ No scripts in <head> at all — zero render-blocking -->
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">JavaScript</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">FCP</span>
+      <span class="impact-tag down">TBT</span>
+      <span class="impact-tag down">INP</span>
+    </div>
+  </div>
+  <h1>Yielding to the Browser</h1>
+  <p class="page-desc">No scripts in <code>&lt;head&gt;</code>. Immediate visual feedback on click before any heavy work starts. Long tasks split into 50ms chunks using a <code>scheduler.yield()</code> polyfill. Search debounced to a single task per pause.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+    <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1.25rem;line-height:1.7">
+      The page parsed in <strong id="startup-time" style="color:#4ade80">calculating…</strong>.
+      Click the button — it gives immediate feedback then does the same 2s of work in chunks.
+      Try typing in the search box while chunks run.
+    </p>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem">
+      <button id="good-btn" style="padding:.6rem 1.25rem;background:var(--accent);color:#fff;border:none;border-radius:var(--rsm);cursor:pointer;font-size:.875rem;font-weight:700">
+        Click me (chunked work)
+      </button>
+      <input id="good-search" type="text" placeholder="Type here (debounced 250ms)…"
+        style="flex:1;min-width:200px;padding:.6rem 1rem;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:.875rem">
+    </div>
+
+    <div id="inp-status" style="font-size:.8125rem;color:var(--text-muted);min-height:1.5em"></div>
+
+    <!-- Chunk progress -->
+    <div style="margin-top:1rem">
+      <div class="section-label">Chunked work progress — main thread stays free between chunks</div>
+      <div style="height:32px;background:rgba(0,0,0,.3);border-radius:var(--rsm);border:1px solid var(--border);overflow:hidden;position:relative;margin-top:.5rem">
+        <div id="chunk-bar" style="position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(34,197,94,.45);transition:width .06s linear"></div>
+        <span id="chunk-label" style="position:absolute;inset:0;display:flex;align-items:center;padding:0 .75rem;font-size:.72rem;color:var(--text-muted)">Ready</span>
+      </div>
+      <p id="chunk-status" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem"></p>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓">Zero scripts in <code>&lt;head&gt;</code> — HTML parses and FCP happens in milliseconds, not 1.2s.</li>
+        <li data-i="✓">Button click updates state instantly (visual feedback before work starts) — the browser can paint the response frame, keeping INP low.</li>
+        <li data-i="✓">The 2s of work is split into 50ms chunks. Between each chunk, <code>setTimeout(0)</code> yields to the browser — input events can be processed.</li>
+        <li data-i="✓">Search input is debounced to 250ms — only one task fires per pause, not one per keystroke.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→">Scripts in <code>&lt;head&gt;</code> blocking 1.2s → zero scripts in head</li>
+        <li data-i="→">2000ms sync task on click → immediate feedback + chunked work</li>
+        <li data-i="→">300ms block per keypress → 250ms debounce, one task total</li>
+        <li data-i="→">INP &gt; 2000ms → INP &lt; 50ms</li>
+        <li data-i="→">TBT 1200ms → TBT ~0ms (no long tasks in head)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ The Good Code</div>
+    <div class="code-block">// ✓ scheduler.yield() polyfill
+function yieldToMain() {
+  if ('scheduler' in window && 'yield' in scheduler) {
+    return scheduler.yield();
+  }
+  return new Promise(function(r) { setTimeout(r, 0); });
+}
+
+// ✓ Immediate feedback + chunked work
+btn.addEventListener('click', async function () {
+  btn.textContent = 'Working…'; // instant visual feedback → low INP
+  btn.disabled = true;
+
+  await yieldToMain(); // yield so browser can paint the feedback
+
+  var CHUNKS = 40; // 40 chunks × 50ms ≈ 2s of work
+  for (var i = 0; i &lt; CHUNKS; i++) {
+    var deadline = Date.now() + 50;
+    while (Date.now() &lt; deadline) { /* work */ }
+    updateProgress(i / CHUNKS);
+    await yieldToMain(); // yield between each chunk
+  }
+  btn.textContent = 'Done ✓';
+  btn.disabled = false;
+});
+
+// ✓ Debounced search — one task per pause
+var debounceTimer;
+search.addEventListener('input', function () {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(function () {
+    runSearch(search.value); // fires once, 250ms after typing stops
+  }, 250);
+});</div>
+  </div>
+
+</main>
+
+<!-- ✓ All scripts deferred — zero impact on FCP -->
+<script defer>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('startup-time').textContent =
+      Math.round(performance.now()) + 'ms after navigation start';
+
+    var btn    = document.getElementById('good-btn');
+    var search = document.getElementById('good-search');
+    var status = document.getElementById('inp-status');
+    var bar    = document.getElementById('chunk-bar');
+    var lbl    = document.getElementById('chunk-label');
+    var cst    = document.getElementById('chunk-status');
+
+    // scheduler.yield() polyfill
+    function yieldToMain() {
+      if (window.scheduler && scheduler.yield) return scheduler.yield();
+      return new Promise(function(r) { setTimeout(r, 0); });
+    }
+
+    // ✓ Button: immediate feedback then chunked work
+    btn.addEventListener('click', async function () {
+      var clickTime = Date.now();
+      btn.textContent = 'Working… ✓';  // instant visual update
+      btn.disabled = true;
+      status.textContent = '✓ UI updated instantly — now running work in chunks…';
+
+      await yieldToMain();  // yield so browser paints the button change
+
+      var CHUNKS = 40;
+      for (var i = 0; i < CHUNKS; i++) {
+        var deadline = Date.now() + 50;
+        while (Date.now() < deadline) { /* 50ms of real work */ }
+
+        var pct = Math.round(((i + 1) / CHUNKS) * 100);
+        bar.style.width = pct + '%';
+        lbl.textContent = pct + '%';
+        cst.textContent = 'Chunk ' + (i+1) + '/' + CHUNKS + ' — main thread free between each';
+
+        await yieldToMain();  // yield between chunks → INP stays low
+      }
+
+      var elapsed = Date.now() - clickTime;
+      btn.textContent = 'Click me (chunked work)';
+      btn.disabled = false;
+      lbl.textContent = 'Done ✓';
+      status.textContent = '✓ All work done in ' + elapsed + 'ms — you could type throughout';
+    });
+
+    // ✓ Debounced search
+    var timer;
+    search.addEventListener('input', function () {
+      clearTimeout(timer);
+      status.textContent = 'Waiting to debounce…';
+      timer = setTimeout(function () {
+        status.textContent = '✓ Search ran once for: "' + search.value + '" (debounced 250ms)';
+      }, 250);
+    });
+  });
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

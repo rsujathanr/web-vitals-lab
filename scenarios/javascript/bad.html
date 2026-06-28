@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript — Bad | Web Vitals Lab</title>
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+
+  <!-- ✕ RENDER-BLOCKING SCRIPT #1: 800ms busy-loop blocks HTML parsing -->
+  <script>
+    void function () {
+      var s = Date.now();
+      while (Date.now() - s < 800) { /* blocking main thread */ }
+    }();
+  </script>
+
+  <!-- ✕ RENDER-BLOCKING SCRIPT #2: 400ms additional block -->
+  <script>
+    void function () {
+      var s = Date.now();
+      while (Date.now() - s < 400) { /* still blocking */ }
+    }();
+  </script>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">JavaScript</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn active-bad">✕ Bad</a>
+    <a href="good.html" class="toggle-btn">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-bad">BAD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag">FCP</span>
+      <span class="impact-tag">TBT</span>
+      <span class="impact-tag">INP</span>
+    </div>
+  </div>
+  <h1>Render-Blocking Scripts &amp; Long Tasks</h1>
+  <p class="page-desc">Two synchronous 800ms + 400ms busy-loops in <code>&lt;head&gt;</code> block HTML parsing entirely. A 2000ms synchronous task on button click destroys INP. Every keypress fires a 300ms blocking task.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+    <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1.25rem;line-height:1.7">
+      The page took <strong id="startup-time" style="color:#f87171">calculating…</strong> to parse due to blocking scripts.
+      Click the button below — it runs a 2000ms synchronous busy-loop. Try typing in the search box while it runs.
+    </p>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem">
+      <button id="bad-btn" style="padding:.6rem 1.25rem;background:var(--accent);color:#fff;border:none;border-radius:var(--rsm);cursor:pointer;font-size:.875rem;font-weight:700">
+        Click me (2s long task)
+      </button>
+      <input id="bad-search" type="text" placeholder="Type here (300ms block per keypress)…"
+        style="flex:1;min-width:200px;padding:.6rem 1rem;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:.875rem">
+    </div>
+
+    <div id="inp-status" style="font-size:.8125rem;color:var(--text-muted);min-height:1.5em"></div>
+
+    <!-- TBT progress bar -->
+    <div style="margin-top:1rem">
+      <div class="section-label">Main thread timeline</div>
+      <div style="height:32px;background:rgba(0,0,0,.3);border-radius:var(--rsm);border:1px solid var(--border);overflow:hidden;position:relative;margin-top:.5rem">
+        <div id="tbt-bar" style="position:absolute;inset:0 100% 0 0;background:rgba(239,68,68,.45)"></div>
+        <span id="tbt-label" style="position:absolute;inset:0;display:flex;align-items:center;padding:0 .75rem;font-size:.72rem;color:var(--text-muted)">Idle</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>❌ What's wrong</h3>
+      <ul>
+        <li data-i="⛔">Two inline <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code> with 800ms + 400ms busy-loops — HTML parser is completely blocked for 1.2s before a single pixel paints.</li>
+        <li data-i="⛔">Button click runs a 2000ms synchronous <code>while</code> loop — the browser cannot process any input until it finishes (INP &gt; 2000ms).</li>
+        <li data-i="⛔">Search input fires a 300ms blocking task on <em>every single keypress</em> — typing feels like molasses.</li>
+        <li data-i="⛔">No <code>async</code> or <code>defer</code> on any script — every script is a render blocker by default.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>✅ How to fix → <a href="good.html" style="font-weight:400;font-size:.85em">good.html</a></h3>
+      <ul>
+        <li data-i="✓">Remove all inline scripts from <code>&lt;head&gt;</code> — move work to <code>defer</code>ed external scripts.</li>
+        <li data-i="✓">On click: update UI immediately (instant visual feedback), then use <code>scheduler.yield()</code> before the heavy work.</li>
+        <li data-i="✓">Break large work into 50ms chunks separated by <code>setTimeout(0)</code> or <code>scheduler.yield()</code>.</li>
+        <li data-i="✓">Debounce search input to 250ms — only one task fires after typing stops.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✕ The Bad Code</div>
+    <div class="code-block">&lt;!-- ✕ Render-blocking scripts in &lt;head&gt; --&gt;
+&lt;script&gt;
+  var s = Date.now();
+  while (Date.now() - s &lt; 800) {} // blocks parsing!
+&lt;/script&gt;
+&lt;script&gt;
+  var s = Date.now();
+  while (Date.now() - s &lt; 400) {} // still blocking
+&lt;/script&gt;
+
+&lt;!-- ✕ 2000ms long task on click → INP &gt; 2000ms --&gt;
+btn.addEventListener('click', function () {
+  var s = Date.now();
+  while (Date.now() - s &lt; 2000) {} // freezes browser
+  updateUI();
+});
+
+&lt;!-- ✕ 300ms block per keypress --&gt;
+input.addEventListener('input', function () {
+  var s = Date.now();
+  while (Date.now() - s &lt; 300) {} // every. single. key.
+});</div>
+  </div>
+
+</main>
+
+<script>
+  // Record when the page became interactive
+  var pageStart = performance.now();
+  document.getElementById('startup-time').textContent =
+    Math.round(pageStart) + 'ms after navigation start';
+
+  var btn    = document.getElementById('bad-btn');
+  var search = document.getElementById('bad-search');
+  var status = document.getElementById('inp-status');
+  var bar    = document.getElementById('tbt-bar');
+  var lbl    = document.getElementById('tbt-label');
+
+  function showBlock(ms, label) {
+    bar.style.transition = 'right ' + (ms/1000) + 's linear';
+    bar.style.right = '0';
+    lbl.textContent = label;
+  }
+
+  function clearBlock(msg) {
+    bar.style.transition = 'none';
+    bar.style.right = '100%';
+    lbl.textContent = msg;
+  }
+
+  // ✕ Button: 2000ms synchronous long task — destroys INP
+  btn.addEventListener('click', function () {
+    var clickTime = Date.now();
+    status.textContent = 'Clicked — running 2000ms blocking task…';
+    showBlock(2000, 'Blocking main thread for 2000ms…');
+
+    var s = Date.now();
+    while (Date.now() - s < 2000) { /* blocking */ }
+
+    var inp = Date.now() - clickTime;
+    status.textContent = '✕ INP: ' + inp + 'ms — browser was frozen the entire time';
+    clearBlock('Idle');
+  });
+
+  // ✕ Search: 300ms blocking task on EVERY keypress
+  search.addEventListener('input', function () {
+    showBlock(0.3, 'Blocking 300ms for search…');
+    var s = Date.now();
+    while (Date.now() - s < 300) { /* blocking per keypress */ }
+    clearBlock('Idle');
+    status.textContent = '✕ Blocked 300ms for: "' + search.value + '"';
+  });
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

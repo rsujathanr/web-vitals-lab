@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caching — Good | Web Vitals Lab</title>
+  <!--
+    ✓ Correct Cache-Control for HTML (set server-side, not meta):
+       Cache-Control: no-cache
+       ETag: "abc123"
+    → Browser revalidates, but gets 304 Not Modified if unchanged (0 bytes transferred)
+  -->
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Caching</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">TTFB</span>
+      <span class="impact-tag down">LCP</span>
+    </div>
+  </div>
+  <h1>Immutable Assets, ETag HTML, Service Worker</h1>
+  <p class="page-desc">Content-hash filenames on JS/CSS with <code>max-age=31536000, immutable</code>. HTML with <code>no-cache</code> + ETag — revalidates but transfers 0 bytes if unchanged. Images with <code>stale-while-revalidate</code>. Service worker for offline + cache-first.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo — Cache Hit Rate</div>
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.7">
+      Reload this page. Stable image URLs are served from disk cache after the first visit.
+      Open DevTools → Network → filter "Img" to see "(disk cache)" on all three images.
+    </p>
+
+    <div class="row" style="margin-bottom:1.5rem">
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+        <div id="visit-count" style="font-size:2rem;font-weight:800;color:#4ade80">0</div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Visits this session</div>
+      </div>
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+        <div id="cache-rate" style="font-size:2rem;font-weight:800;color:#4ade80">—</div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Image cache hit rate</div>
+      </div>
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+        <div id="sw-status" style="font-size:2rem;font-weight:800;color:#4ade80">—</div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Service worker</div>
+      </div>
+    </div>
+
+    <!-- ✓ Stable URLs — cached after first visit -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">
+      <div style="aspect-ratio:4/3;background:var(--bg-surf);border-radius:var(--rsm);overflow:hidden">
+        <img src="https://picsum.photos/seed/cachegood1/400/300" width="400" height="300"
+          style="width:100%;height:100%;object-fit:cover;display:block" alt="Image 1 — stable URL">
+      </div>
+      <div style="aspect-ratio:4/3;background:var(--bg-surf);border-radius:var(--rsm);overflow:hidden">
+        <img src="https://picsum.photos/seed/cachegood2/400/300" width="400" height="300"
+          style="width:100%;height:100%;object-fit:cover;display:block" alt="Image 2 — stable URL">
+      </div>
+      <div style="aspect-ratio:4/3;background:var(--bg-surf);border-radius:var(--rsm);overflow:hidden">
+        <img src="https://picsum.photos/seed/cachegood3/400/300" width="400" height="300"
+          style="width:100%;height:100%;object-fit:cover;display:block" alt="Image 3 — stable URL">
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-label">Asset Cache Header Table</div>
+    <table class="cache-table">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Filename</th>
+          <th>Cache-Control</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HTML</td>
+          <td><code>index.html</code></td>
+          <td><span class="tag-good">no-cache + ETag</span></td>
+          <td><span class="tag-good">304 Not Modified if unchanged (0B)</span></td>
+        </tr>
+        <tr>
+          <td>JavaScript</td>
+          <td><code>app.a3f9c2.js</code></td>
+          <td><span class="tag-good">max-age=31536000, immutable</span></td>
+          <td><span class="tag-good">Cached forever; change = new filename</span></td>
+        </tr>
+        <tr>
+          <td>CSS</td>
+          <td><code>styles.b7d4e1.css</code></td>
+          <td><span class="tag-good">max-age=31536000, immutable</span></td>
+          <td><span class="tag-good">Cached forever; change = new filename</span></td>
+        </tr>
+        <tr>
+          <td>Images</td>
+          <td><code>hero.jpg</code> (stable)</td>
+          <td><span class="tag-good">max-age=86400, stale-while-revalidate=604800</span></td>
+          <td><span class="tag-good">Served instantly; refreshes in background</span></td>
+        </tr>
+        <tr>
+          <td>API responses</td>
+          <td><code>/api/products</code></td>
+          <td><span class="tag-good">no-cache, stale-while-revalidate=60</span></td>
+          <td><span class="tag-good">Stale content shown instantly, fresh in bg</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓">Content-hash filenames on JS/CSS — <code>app.a3f9c2.js</code> can be cached with <code>immutable</code> for 1 year. A content change produces a new hash, a new URL.</li>
+        <li data-i="✓">HTML uses <code>no-cache</code> + ETag — browser always checks freshness but gets 304 Not Modified (0 bytes) when nothing changed.</li>
+        <li data-i="✓">Images with <code>stale-while-revalidate=604800</code> — served instantly from cache while refreshing in the background for up to 7 days.</li>
+        <li data-i="✓">Service worker can pre-cache critical assets — repeat visits load from memory before the network responds.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→">HTML <code>no-store</code> → <code>no-cache + ETag</code></li>
+        <li data-i="→"><code>app.js?v=timestamp</code> → <code>app.a3f9c2.js</code> (content hash)</li>
+        <li data-i="→">Images <code>max-age=60</code> → <code>max-age=86400, swr=604800</code></li>
+        <li data-i="→">No service worker → cache-first SW for assets</li>
+        <li data-i="→">0% cache hit rate → ~100% on repeat visits</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ Server-Side Cache Headers</div>
+    <div class="code-block"># ✓ HTML — revalidate but 304 if unchanged (ETag)
+Cache-Control: no-cache
+ETag: "a3f9c2b7d4"
+
+# ✓ JS/CSS with content hash in filename — immutable for 1 year
+# (filename changes when content changes, so no stale cache issue)
+Cache-Control: max-age=31536000, immutable
+
+# ✓ Images — 1 day cache, stale 7 days while revalidating
+Cache-Control: max-age=86400, stale-while-revalidate=604800
+
+# ✓ API responses — always fresh but show stale if network is slow
+Cache-Control: no-cache, stale-while-revalidate=60</div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ Service Worker — Cache-First for Static Assets</div>
+    <div class="code-block">// service-worker.js
+const CACHE_NAME = 'wvl-v1';
+const PRECACHE = [
+  '/', '/css/base.css', '/js/app.a3f9c2.js',
+];
+
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(c =&gt; c.addAll(PRECACHE))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('fetch', function(e) {
+  // Cache-first for static assets
+  if (e.request.destination === 'script'
+   || e.request.destination === 'style'
+   || e.request.destination === 'image') {
+    e.respondWith(
+      caches.match(e.request).then(function(cached) {
+        return cached || fetch(e.request).then(function(res) {
+          var clone = res.clone();
+          caches.open(CACHE_NAME).then(c =&gt; c.put(e.request, clone));
+          return res;
+        });
+      })
+    );
+  }
+});</div>
+  </div>
+
+</main>
+
+<script>
+  var count = parseInt(sessionStorage.getItem('goodCacheVisits') || '0') + 1;
+  sessionStorage.setItem('goodCacheVisits', count);
+  document.getElementById('visit-count').textContent = count;
+
+  // Check if images came from cache via PerformanceResourceTiming
+  window.addEventListener('load', function() {
+    var entries = performance.getEntriesByType('resource').filter(function(e) {
+      return e.initiatorType === 'img';
+    });
+    var fromCache = entries.filter(function(e) {
+      return e.transferSize === 0 && e.decodedBodySize > 0;
+    });
+    if (entries.length > 0) {
+      var rate = Math.round((fromCache.length / entries.length) * 100);
+      document.getElementById('cache-rate').textContent =
+        count > 1 ? rate + '%' : '(reload →)';
+    }
+  });
+
+  // Service worker status
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistration().then(function(reg) {
+      document.getElementById('sw-status').textContent = reg ? 'active ✓' : 'none';
+    });
+  } else {
+    document.getElementById('sw-status').textContent = 'n/a';
+  }
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

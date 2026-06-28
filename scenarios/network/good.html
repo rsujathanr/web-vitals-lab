@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network — Good | Web Vitals Lab</title>
+
+  <!-- ✓ preconnect: fonts.googleapis.com + fonts.gstatic.com (with crossorigin) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- ✓ preconnect: image CDN -->
+  <link rel="preconnect" href="https://picsum.photos">
+
+  <!-- ✓ dns-prefetch: lower-cost hint for analytics (not critical path) -->
+  <link rel="dns-prefetch" href="https://cdn.example-analytics.com">
+
+  <!-- ✓ preload: LCP image with high priority — fetched immediately -->
+  <link rel="preload" as="image" href="https://picsum.photos/seed/netgood0/1200/480" fetchpriority="high">
+
+  <!-- ✓ prefetch: next page — loaded in idle time -->
+  <link rel="prefetch" href="../../index.html">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Network</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">TTFB</span>
+      <span class="impact-tag down">LCP</span>
+      <span class="impact-tag down">FCP</span>
+    </div>
+  </div>
+  <h1>Resource Hints — Parallel Connection Setup</h1>
+  <p class="page-desc">Preconnect to all cross-origin servers. Preload the LCP image at highest priority. DNS-prefetch for non-critical origins. Prefetch the next likely navigation. The browser's preload scanner does all the work before the page body even renders.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo — Origin Table</div>
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.7">
+      All cross-origin connections are pre-warmed in <code>&lt;head&gt;</code>. By the time any body tag references these servers, TCP+TLS is already done.
+    </p>
+
+    <table class="cache-table" style="margin-bottom:1.5rem">
+      <thead>
+        <tr>
+          <th>Origin</th>
+          <th>Purpose</th>
+          <th>Hint</th>
+          <th>Connection Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>picsum.photos</td>
+          <td>Images (LCP)</td>
+          <td><span class="tag-good">✓ preconnect + preload</span></td>
+          <td><span class="tag-good">0ms (pre-warmed)</span></td>
+        </tr>
+        <tr>
+          <td>fonts.googleapis.com</td>
+          <td>Font CSS</td>
+          <td><span class="tag-good">✓ preconnect</span></td>
+          <td><span class="tag-good">0ms (pre-warmed)</span></td>
+        </tr>
+        <tr>
+          <td>fonts.gstatic.com</td>
+          <td>Font files</td>
+          <td><span class="tag-good">✓ preconnect crossorigin</span></td>
+          <td><span class="tag-good">0ms (pre-warmed)</span></td>
+        </tr>
+        <tr>
+          <td>cdn.example-analytics.com</td>
+          <td>Analytics JS</td>
+          <td><span class="tag-good">✓ dns-prefetch</span></td>
+          <td><span class="tag-good">DNS only, ~20ms</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- LCP image: preloaded in head, high priority -->
+    <img
+      src="https://picsum.photos/seed/netgood0/1200/480"
+      width="1200" height="480"
+      style="width:100%;aspect-ratio:5/2;object-fit:cover;border-radius:var(--rsm);background:var(--bg-surf)"
+      fetchpriority="high"
+      alt="Hero — LCP candidate, preloaded"
+    >
+  </div>
+
+  <!-- Optimised waterfall -->
+  <div class="demo-section">
+    <div class="demo-label">Request Waterfall (with resource hints)</div>
+    <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:1rem">All connections run in parallel during HTML parsing. LCP image arrives before font files. Total overhead: ~0ms per origin (pre-warmed).</p>
+
+    <div class="waterfall">
+      <div class="wf-row">
+        <div class="wf-label">HTML document</div>
+        <div class="wf-track">
+          <div class="wf-seg req" style="left:0%;width:8%"><span class="wf-seg-label">HTML</span></div>
+          <div class="wf-seg res" style="left:8%;width:12%"><span class="wf-seg-label">content</span></div>
+        </div>
+      </div>
+      <!-- Preconnects run in parallel with HTML parse -->
+      <div class="wf-row">
+        <div class="wf-label">preconnect (all)</div>
+        <div class="wf-track">
+          <div class="wf-seg dns" style="left:0%;width:5%"><span class="wf-seg-label">DNS</span></div>
+          <div class="wf-seg tcp" style="left:5%;width:5%"><span class="wf-seg-label">TCP</span></div>
+          <div class="wf-seg ssl" style="left:10%;width:7%"><span class="wf-seg-label">TLS ✓</span></div>
+        </div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">LCP image (preload)</div>
+        <div class="wf-track">
+          <!-- Starts immediately — no connection overhead -->
+          <div class="wf-seg req" style="left:0%;width:4%"><span class="wf-seg-label">req</span></div>
+          <div class="wf-seg res" style="left:4%;width:20%"><span class="wf-seg-label">image (LCP) ✓</span></div>
+        </div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">fonts.goog (CSS)</div>
+        <div class="wf-track">
+          <!-- Connection already warmed -->
+          <div class="wf-seg req" style="left:20%;width:4%"><span class="wf-seg-label">req</span></div>
+          <div class="wf-seg res" style="left:24%;width:10%"><span class="wf-seg-label">CSS</span></div>
+        </div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">fonts.gstatic (woff2)</div>
+        <div class="wf-track">
+          <!-- Connection already warmed -->
+          <div class="wf-seg req" style="left:34%;width:4%"><span class="wf-seg-label">req</span></div>
+          <div class="wf-seg res" style="left:38%;width:15%"><span class="wf-seg-label">font</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:.72rem;color:var(--text-muted);margin-top:.75rem">
+      <span style="color:#f87171">■ DNS</span> &nbsp;
+      <span style="color:#fb923c">■ TCP</span> &nbsp;
+      <span style="color:#eab308">■ TLS</span> &nbsp;
+      <span style="color:#6366f1">■ Request</span> &nbsp;
+      <span style="color:#22c55e">■ Response</span>
+    </p>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓"><code>preconnect</code> to all cross-origin image/font servers in <code>&lt;head&gt;</code> — DNS+TCP+TLS runs in parallel with HTML parsing.</li>
+        <li data-i="✓"><code>preload as="image" fetchpriority="high"</code> on LCP hero — browser fetches it before parsing the body, LCP improves dramatically.</li>
+        <li data-i="✓"><code>dns-prefetch</code> for analytics — lighter than preconnect (DNS only), appropriate for non-critical origins.</li>
+        <li data-i="✓"><code>prefetch</code> for next page — loads in browser idle time; navigation appears instant.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→">No hints → 4× preconnect in <code>&lt;head&gt;</code></li>
+        <li data-i="→">LCP discovered late → preloaded at highest priority</li>
+        <li data-i="→">~400ms connection overhead → ~0ms (pre-warmed)</li>
+        <li data-i="→">Next page cold → prefetched during idle time</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ The Good Code</div>
+    <div class="code-block">&lt;!-- ✓ preconnect — warms TCP+TLS in parallel with HTML parse --&gt;
+&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;
+&lt;link rel="preconnect" href="https://picsum.photos"&gt;
+
+&lt;!-- ✓ dns-prefetch — DNS only for non-critical origins --&gt;
+&lt;link rel="dns-prefetch" href="https://cdn.example-analytics.com"&gt;
+
+&lt;!-- ✓ preload LCP image at highest priority --&gt;
+&lt;link rel="preload" as="image"
+  href="https://picsum.photos/seed/hero/1200/480"
+  fetchpriority="high"&gt;
+
+&lt;!-- ✓ prefetch next page — loads during idle time --&gt;
+&lt;link rel="prefetch" href="/next-page.html"&gt;</div>
+  </div>
+
+</main>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

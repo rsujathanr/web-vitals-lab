@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS — Good | Web Vitals Lab</title>
+
+  <!-- ✓ Critical CSS inlined — zero blocking network requests for styles -->
+  <style>
+    /* ─── CRITICAL (above-the-fold) ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0f18; --bg-card:#12152a; --bg-surf:#181b30; --bg-input:#0f1120;
+      --text:#e4e6f0; --text-muted:#6b6f8a;
+      --accent:#6366f1; --accent-dim:rgba(99,102,241,.12); --accent-mid:rgba(99,102,241,.25);
+      --good:#22c55e; --border:rgba(255,255,255,.06); --border-md:rgba(255,255,255,.1);
+      --radius:10px; --rsm:6px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; line-height:1.6; min-height:100vh; }
+    a { color:var(--accent); text-decoration:none; }
+    code { font-family:"SF Mono","Fira Code",Consolas,monospace; font-size:.85em; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:4px; padding:.05em .35em; }
+    .page-nav { position:sticky; top:0; z-index:100; background:rgba(13,15,24,.9); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1rem; padding:.75rem 1.5rem; height:52px; }
+    .nav-logo { font-weight:800; font-size:.9375rem; letter-spacing:-.01em; color:var(--text); }
+    .nav-logo:hover { color:var(--accent); }
+    .nav-breadcrumb { display:flex; align-items:center; gap:.4rem; font-size:.8125rem; color:var(--text-muted); flex:1; }
+    .nav-breadcrumb a { color:var(--text-muted); }
+    .nav-breadcrumb .sep { opacity:.4; }
+    .nav-breadcrumb .crumb-current { color:var(--text); font-weight:600; }
+    .nav-toggle { display:flex; border:1px solid var(--border-md); border-radius:var(--rsm); overflow:hidden; }
+    .toggle-btn { padding:.3rem .85rem; font-size:.8rem; font-weight:600; color:var(--text-muted); transition:background .15s,color .15s; white-space:nowrap; }
+    .toggle-btn:hover { color:var(--text); background:rgba(255,255,255,.04); }
+    .toggle-btn + .toggle-btn { border-left:1px solid var(--border-md); }
+    .toggle-btn.active-good { background:rgba(34,197,94,.15); color:#4ade80; }
+    .page-header { max-width:900px; margin:0 auto; padding:2.5rem 1.5rem 0; }
+    .header-top { display:flex; align-items:center; gap:.75rem; margin-bottom:.875rem; flex-wrap:wrap; }
+    .badge { display:inline-flex; align-items:center; gap:.25rem; padding:.2rem .7rem; border-radius:999px; font-size:.675rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .badge-good { background:rgba(34,197,94,.14); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+    .impact-tags { display:flex; gap:.35rem; flex-wrap:wrap; }
+    .impact-tag { font-size:.65rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:.15rem .55rem; border-radius:999px; background:var(--accent-dim); color:#a5b4fc; border:1px solid var(--accent-mid); }
+    .impact-tag.down::after { content:'↓'; margin-left:.25em; color:var(--good); }
+    .page-header h1 { font-size:clamp(1.25rem,3vw,1.875rem); font-weight:800; letter-spacing:-.02em; line-height:1.15; margin-bottom:.6rem; }
+    .page-desc { color:var(--text-muted); font-size:.9375rem; line-height:1.75; max-width:680px; }
+    .scenario-main { max-width:900px; margin:0 auto; padding:2rem 1.5rem 8rem; }
+    .demo-section { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin:1.5rem 0; }
+    .demo-label { font-size:.675rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-mid); border-radius:999px; display:inline-flex; padding:.15rem .65rem; margin-bottom:1rem; }
+    .section-label { font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.75rem; }
+    .exp-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.5rem 0; }
+    @media(max-width:640px) { .exp-grid { grid-template-columns:1fr; } }
+    .exp-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; }
+    .exp-card h3 { font-size:.875rem; font-weight:700; margin-bottom:.75rem; }
+    .exp-card ul { list-style:none; display:flex; flex-direction:column; gap:.5rem; }
+    .exp-card ul li { font-size:.8375rem; color:var(--text-muted); line-height:1.6; display:flex; gap:.5rem; }
+    .exp-card ul li::before { content:attr(data-i); flex-shrink:0; }
+    .code-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:1.5rem 0; }
+    .code-card-header { background:rgba(0,0,0,.25); padding:.6rem 1rem; font-size:.7rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border); }
+    .code-block { font-family:"SF Mono","Fira Code",Consolas,monospace; font-size:.78rem; color:#a8b3d0; line-height:1.7; padding:1.1rem 1.25rem; overflow-x:auto; white-space:pre; background:#090b13; }
+
+    /* ✓ Ball: transform animation — GPU composited, no layout recalc -->
+    .ball-track { position:relative; height:60px; background:rgba(0,0,0,.25); border-radius:var(--rsm); overflow:hidden; border:1px solid var(--border); }
+    .ball {
+      position:absolute; top:50%; left:20px;
+      width:40px; height:40px; border-radius:50%;
+      background:#6366f1;
+      will-change: transform;  /* ✓ promotes to own compositor layer */
+      animation: goodBall 2s linear infinite;
+      transform: translateY(-50%);
+    }
+    @keyframes goodBall {
+      0%   { transform: translateY(-50%) translateX(0); }
+      100% { transform: translateY(-50%) translateX(calc(100vw - 80px)); }
+      /* ✓ transform — GPU only, zero layout recalcs */
+    }
+
+    /* ✓ Cards: explicit transition properties only (no layout triggers) */
+    .good-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      /* ✓ Only animating compositor-safe properties */
+      transition: border-color .2s, box-shadow .2s, opacity .2s;
+      cursor: pointer;
+    }
+    .good-card:hover {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 1px rgba(99,102,241,.3), 0 4px 16px rgba(99,102,241,.15);
+    }
+  </style>
+
+  <!-- ✓ Non-critical CSS (metrics overlay) loaded via preload trick — non-blocking -->
+  <link rel="preload" href="../../css/metrics-overlay.css" as="style" onload="this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="../../css/metrics-overlay.css"></noscript>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">CSS</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">FCP</span>
+      <span class="impact-tag down">LCP</span>
+      <span class="impact-tag down">TBT</span>
+    </div>
+  </div>
+  <h1>Critical CSS Inline &amp; Composited Animations</h1>
+  <p class="page-desc">All critical CSS inlined in <code>&lt;style&gt;</code> — zero blocking requests. Non-critical CSS deferred via preload trick. Ball animates with <code>transform</code> + <code>will-change</code>. Cards use explicit transition properties. Off-screen section uses <code>content-visibility: auto</code>.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem">
+      Ball animates with <code>transform: translateX()</code> + <code>will-change: transform</code> — runs entirely on the GPU compositor thread, never touching layout.
+    </p>
+
+    <!-- ✓ Ball using transform — no layout, no paint, GPU only -->
+    <div class="ball-track">
+      <div class="ball"></div>
+    </div>
+
+    <p style="font-size:.8125rem;color:var(--text-muted);margin:.75rem 0">
+      Cards use <code>transition: border-color .2s, box-shadow .2s</code> — only compositor-safe properties:
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">
+      <div class="good-card"><strong>Card A</strong><br><small style="color:var(--text-muted)">Hover me</small></div>
+      <div class="good-card"><strong>Card B</strong><br><small style="color:var(--text-muted)">Hover me</small></div>
+      <div class="good-card"><strong>Card C</strong><br><small style="color:var(--text-muted)">Hover me</small></div>
+    </div>
+  </div>
+
+  <!-- ✓ content-visibility: auto on off-screen section — browser skips paint -->
+  <section style="content-visibility: auto; contain-intrinsic-size: auto 300px; margin-top: 1.5rem;">
+    <div class="demo-section" style="margin:0">
+      <div class="demo-label">Off-screen section (content-visibility: auto)</div>
+      <p style="font-size:.875rem;color:var(--text-muted);line-height:1.7">
+        This section is painted only when it enters the viewport.
+        <code>content-visibility: auto</code> skips layout, paint, and compositing for off-screen content —
+        reducing Time to Interactive and First Paint for long pages by up to 7× (Google found this on their Japan site).
+      </p>
+    </div>
+  </section>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓">Zero external stylesheets in <code>&lt;head&gt;</code> — all critical styles are inline, so FCP happens in milliseconds with zero network wait.</li>
+        <li data-i="✓"><code>will-change: transform</code> on the ball — browser promotes it to its own GPU layer before the animation starts.</li>
+        <li data-i="✓"><code>transform: translateX()</code> not <code>left</code> — runs on the compositor thread, never triggers layout.</li>
+        <li data-i="✓">Explicit transitions only: <code>border-color</code>, <code>box-shadow</code>, <code>opacity</code> — all compositor-safe.</li>
+        <li data-i="✓"><code>content-visibility: auto</code> on the off-screen section — skipped entirely until it scrolls into view.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→">2 blocking stylesheets (286KB) → 0 blocking requests</li>
+        <li data-i="→"><code>left</code> animation → <code>transform: translateX()</code></li>
+        <li data-i="→"><code>transition: all</code> → <code>transition: border-color .2s, box-shadow .2s</code></li>
+        <li data-i="→"><code>filter: drop-shadow</code> → <code>box-shadow</code> (compositable)</li>
+        <li data-i="→">No paint skipping → <code>content-visibility: auto</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✓ The Good Code</div>
+    <div class="code-block">&lt;!-- ✓ Critical CSS inlined — zero blocking requests --&gt;
+&lt;style&gt;
+  /* only above-the-fold rules */
+  body { background: #0d0f18; color: #e4e6f0; ... }
+&lt;/style&gt;
+
+&lt;!-- ✓ Non-critical CSS: preload trick → non-blocking --&gt;
+&lt;link rel="preload" href="styles.css" as="style"
+  onload="this.rel='stylesheet'"&gt;
+
+/* ✓ GPU-composited animation — no layout */
+.ball {
+  will-change: transform;
+  animation: slide 2s linear infinite;
+}
+@keyframes slide {
+  to { transform: translateX(calc(100% - 40px)); }
+}
+
+/* ✓ Explicit transitions — no layout properties */
+.card {
+  transition: border-color .2s, box-shadow .2s;
+}
+
+/* ✓ Skip off-screen paint entirely */
+.below-fold-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}</div>
+  </div>
+
+</main>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

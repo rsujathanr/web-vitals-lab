@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Third-Party — Bad | Web Vitals Lab</title>
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+
+  <!-- ✕ BLOCKING SCRIPT #1: "Analytics" — 600ms busy-loop in head -->
+  <script>
+    // Simulate a synchronous analytics library that blocks HTML parsing
+    void function () {
+      var s = Date.now();
+      while (Date.now() - s < 600) { /* blocking analytics init */ }
+      window.__analytics = { track: function(){} };
+    }();
+  </script>
+
+  <!-- ✕ BLOCKING SCRIPT #2: "Tag manager" — 400ms busy-loop in head -->
+  <script>
+    void function () {
+      var s = Date.now();
+      while (Date.now() - s < 400) { /* blocking tag manager */ }
+      window.__gtm = { push: function(){} };
+    }();
+  </script>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Third-Party</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn active-bad">✕ Bad</a>
+    <a href="good.html" class="toggle-btn">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-bad">BAD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag">TBT</span>
+      <span class="impact-tag">FCP</span>
+      <span class="impact-tag">LCP</span>
+      <span class="impact-tag">INP</span>
+    </div>
+  </div>
+  <h1>Sync Analytics, Eager YouTube, Instant Chat</h1>
+  <p class="page-desc">Two synchronous scripts in <code>&lt;head&gt;</code> block HTML parsing for 1000ms. A full YouTube <code>&lt;iframe&gt;</code> loads immediately (hundreds of KB from google.com). A simulated chat widget blocks with another 200ms task on load.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.7">
+      This page was blocked for <strong id="startup" style="color:#f87171">calculating…</strong> before you saw the first pixel.
+      The YouTube iframe below loaded eagerly — check the Network tab to see how many requests it made.
+    </p>
+
+    <!-- ✕ YouTube iframe loaded eagerly — downloads hundreds of KB from youtube.com -->
+    <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:var(--rsm);overflow:hidden;background:var(--bg-surf);margin-bottom:1rem">
+      <iframe
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        style="position:absolute;inset:0;width:100%;height:100%;border:0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        title="YouTube video (eagerly loaded)"
+      ></iframe>
+    </div>
+
+    <!-- ✕ Chat widget: 200ms blocking script injected immediately -->
+    <div id="chat-widget" style="position:fixed;bottom:5rem;right:1.25rem;z-index:200;display:none">
+      <div style="background:#1e1a3a;border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:1rem;width:220px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+        <div style="font-weight:700;font-size:.875rem;margin-bottom:.25rem">💬 Chat Support</div>
+        <div style="font-size:.75rem;color:var(--text-muted)">Blocking 200ms to initialise SDK…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>❌ What's wrong</h3>
+      <ul>
+        <li data-i="⛔">Analytics script in <code>&lt;head&gt;</code> with 600ms busy-loop — HTML parser stops completely. FCP delayed by 600ms before a single character renders.</li>
+        <li data-i="⛔">Tag manager in <code>&lt;head&gt;</code> with 400ms block — another 400ms added to TBT. Total: 1000ms blocked before body starts parsing.</li>
+        <li data-i="⛔">YouTube <code>&lt;iframe&gt;</code> loaded immediately — fetches JS, CSS, images and API calls from multiple google.com domains, competing for bandwidth with the LCP image.</li>
+        <li data-i="⛔">Chat widget SDK initialised immediately with a 200ms block — fires during load, competes with user interaction, spikes INP.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>✅ How to fix → <a href="good.html" style="font-weight:400;font-size:.85em">good.html</a></h3>
+      <ul>
+        <li data-i="✓">Move all analytics/tag manager scripts out of <code>&lt;head&gt;</code> — load after <code>window.load</code> so they never block FCP.</li>
+        <li data-i="✓">Replace YouTube <code>&lt;iframe&gt;</code> with a Lite YouTube facade — show a thumbnail image, create the real iframe only when the user clicks Play.</li>
+        <li data-i="✓">Load chat widget SDK only on first <code>mouseover</code> of the chat button — the SDK never loads for users who don't need it.</li>
+        <li data-i="✓">Use <code>async</code>/<code>defer</code> + load-event gating for all remaining third-party scripts.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✕ The Bad Code</div>
+    <div class="code-block">&lt;!-- ✕ Sync analytics blocking &lt;head&gt; — 600ms --&gt;
+&lt;script&gt;
+  var s = Date.now();
+  while (Date.now() - s &lt; 600) {}  // blocks HTML parsing
+  window.__analytics = { track: function(){} };
+&lt;/script&gt;
+
+&lt;!-- ✕ Sync tag manager — 400ms more --&gt;
+&lt;script&gt;
+  var s = Date.now();
+  while (Date.now() - s &lt; 400) {}
+&lt;/script&gt;
+
+&lt;!-- ✕ Eager YouTube iframe — downloads 500KB+ from google.com --&gt;
+&lt;iframe src="https://www.youtube.com/embed/VIDEO_ID"
+  allow="autoplay" allowfullscreen&gt;&lt;/iframe&gt;
+
+&lt;!-- ✕ Chat SDK loaded immediately with 200ms block --&gt;
+&lt;script&gt;
+  var s = Date.now();
+  while (Date.now() - s &lt; 200) {}  // SDK init
+  showChatWidget();
+&lt;/script&gt;</div>
+  </div>
+
+</main>
+
+<!-- ✕ Chat widget: 200ms blocking init fires immediately on page load -->
+<script>
+  document.getElementById('startup').textContent =
+    Math.round(performance.now()) + 'ms before first pixel';
+
+  // ✕ Chat SDK — 200ms blocking task
+  var s = Date.now();
+  while (Date.now() - s < 200) { /* blocking chat init */ }
+  document.getElementById('chat-widget').style.display = 'block';
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fonts — Bad | Web Vitals Lab</title>
+  <!-- ✕ No preconnect to Google Fonts servers -->
+
+  <!-- ✕ All 9 weights of Inter + 6 weights of Playfair Display with display=block (FOIT) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=block">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+  <style>
+    /* ✕ No fallback font tuning — when web font swaps in, text reflows (CLS) */
+    body    { font-family: 'Inter', sans-serif; }
+    .serif  { font-family: 'Playfair Display', serif; }
+    /* No size-adjust, no ascent-override — system serif metrics ≠ Playfair metrics */
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Fonts</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn active-bad">✕ Bad</a>
+    <a href="good.html" class="toggle-btn">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-bad">BAD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag">CLS</span>
+      <span class="impact-tag">FCP</span>
+      <span class="impact-tag">LCP</span>
+    </div>
+  </div>
+  <h1>FOIT, Unpreconnected Fonts, All 9 Weights</h1>
+  <p class="page-desc">Google Fonts loads all 9 weights of Inter plus 6 weights of Playfair Display with <code>display=block</code>. No preconnect means extra DNS + TLS RTTs. Text is invisible until every font file downloads — that's FOIT.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo — text may have been invisible before fonts loaded</div>
+
+    <!-- ✕ All 9 weights rendered — forces download of many font files -->
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+      <div><span style="font-weight:100;font-size:1.25rem">Inter weight 100 — Thin</span></div>
+      <div><span style="font-weight:200;font-size:1.25rem">Inter weight 200 — ExtraLight</span></div>
+      <div><span style="font-weight:300;font-size:1.25rem">Inter weight 300 — Light</span></div>
+      <div><span style="font-weight:400;font-size:1.25rem">Inter weight 400 — Regular</span></div>
+      <div><span style="font-weight:500;font-size:1.25rem">Inter weight 500 — Medium</span></div>
+      <div><span style="font-weight:600;font-size:1.25rem">Inter weight 600 — SemiBold</span></div>
+      <div><span style="font-weight:700;font-size:1.25rem">Inter weight 700 — Bold</span></div>
+      <div><span style="font-weight:800;font-size:1.25rem">Inter weight 800 — ExtraBold</span></div>
+      <div><span style="font-weight:900;font-size:1.25rem">Inter weight 900 — Black</span></div>
+    </div>
+
+    <hr style="margin:1.25rem 0;border-color:var(--border)">
+
+    <!-- ✕ Playfair Display — no fallback metric tuning means CLS on swap -->
+    <p class="serif" style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem">
+      Playfair Display — The quick brown fox
+    </p>
+    <p class="serif" style="font-size:1rem;color:var(--text-muted);line-height:1.8">
+      This paragraph uses Playfair Display with no fallback tuning. When the web font loaded, the text
+      reflowed because Playfair's metrics differ from the generic serif fallback. That reflow is CLS.
+    </p>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>❌ What's wrong</h3>
+      <ul>
+        <li data-i="⛔"><code>display=block</code>: browser shows blank text (FOIT) until all font files download. On slow connections this can be 3–5 seconds of invisible content.</li>
+        <li data-i="⛔">No <code>preconnect</code> to fonts.googleapis.com or fonts.gstatic.com — the browser discovers them late and pays DNS + TLS round-trips before fetching.</li>
+        <li data-i="⛔">9 weights of Inter = up to 9 separate woff2 network requests. Most pages use 2–3 weights. The others are pure waste.</li>
+        <li data-i="⛔">No <code>size-adjust</code> or metric overrides on the fallback font — when Playfair swaps in, its different x-height causes line heights to change and text to reflow (CLS).</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>✅ How to fix → <a href="good.html" style="font-weight:400;font-size:.85em">good.html</a></h3>
+      <ul>
+        <li data-i="✓">Use <code>display=swap</code> — text is always visible using the system font; web font swaps in when ready (FOUT, not FOIT).</li>
+        <li data-i="✓">Add <code>preconnect</code> to both Google Fonts servers to eliminate one RTT.</li>
+        <li data-i="✓">Load only 2 weights (400, 700) — covers most typographic needs with 7× fewer font files.</li>
+        <li data-i="✓">Add <code>@font-face</code> with <code>size-adjust</code> + <code>ascent-override</code> on the fallback so metrics match — CLS from the swap approaches zero.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✕ The Bad Code</div>
+    <div class="code-block">&lt;!-- ✕ No preconnect --&gt;
+&lt;!-- ✕ 9 weights of Inter + 6 of Playfair → many file requests --&gt;
+&lt;!-- ✕ display=block → FOIT (invisible text) --&gt;
+&lt;link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?
+    family=Inter:wght@100;200;300;400;500;600;700;800;900
+    &amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400
+    &amp;display=block"&gt;
+
+/* ✕ No fallback tuning → CLS when web font swaps in */
+body { font-family: 'Inter', sans-serif; }
+.serif { font-family: 'Playfair Display', serif; }</div>
+  </div>
+
+</main>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

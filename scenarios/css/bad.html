@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS — Bad | Web Vitals Lab</title>
+
+  <!-- ✕ Render-blocking external stylesheet #1 (Bootstrap) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!-- ✕ Render-blocking external stylesheet #2 (Font Awesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+
+  <style>
+    /* ✕ Ball animates using `left` — triggers layout + paint every frame */
+    .ball-track {
+      position: relative;
+      height: 60px;
+      background: rgba(0,0,0,.25);
+      border-radius: var(--rsm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .ball {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      left: 0; /* ✕ animating left → forced layout per frame */
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: #6366f1;
+      animation: badBall 2s linear infinite;
+    }
+    @keyframes badBall {
+      0%   { left: 0; }
+      100% { left: calc(100% - 40px); }
+      /* ✕ `left` causes layout recalc + paint on EVERY frame */
+    }
+
+    /* ✕ Cards use transition: all — animates every possible property */
+    .bad-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: all 0.3s ease; /* ✕ 'all' includes layout properties */
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.5)); /* ✕ drop-shadow forces compositing */
+      cursor: pointer;
+    }
+    .bad-card:hover {
+      transform: translateY(-2px);
+      border-color: #6366f1;
+    }
+
+    /* ✕ Hundreds of unused rules that must be parsed */
+    /* --- UNUSED RULES (simulate a bloated stylesheet) --- */
+    .unused-r1  { color: red;    font-size: 14px; margin: 10px; padding: 5px; }
+    .unused-r2  { color: blue;   font-size: 16px; margin: 12px; padding: 6px; }
+    .unused-r3  { color: green;  font-size: 18px; margin: 14px; padding: 7px; }
+    .unused-r4  { color: yellow; font-size: 20px; margin: 16px; padding: 8px; }
+    .unused-r5  { color: pink;   font-size: 22px; margin: 18px; padding: 9px; }
+    .unused-r6  { color: cyan;   font-size: 24px; margin: 20px; padding: 10px; }
+    .unused-r7  { color: lime;   font-size: 26px; margin: 22px; padding: 11px; }
+    .unused-r8  { color: orange; font-size: 28px; margin: 24px; padding: 12px; }
+    .unused-r9  { color: brown;  font-size: 30px; margin: 26px; padding: 13px; }
+    .unused-r10 { color: gray;   font-size: 32px; margin: 28px; padding: 14px; }
+    .unused-r11 { color: red;    font-size: 14px; margin: 10px; border: 1px solid; }
+    .unused-r12 { color: blue;   font-size: 16px; margin: 12px; border: 2px solid; }
+    .unused-r13 { color: green;  font-size: 18px; margin: 14px; border: 3px solid; }
+    .unused-r14 { color: yellow; font-size: 20px; margin: 16px; border: 4px solid; }
+    .unused-r15 { color: pink;   font-size: 22px; margin: 18px; border: 5px solid; }
+    .unused-r16 { color: cyan;   font-size: 24px; margin: 20px; border: 6px solid; }
+    .unused-r17 { color: lime;   font-size: 26px; margin: 22px; width: 100px; }
+    .unused-r18 { color: orange; font-size: 28px; margin: 24px; width: 200px; }
+    .unused-r19 { color: brown;  font-size: 30px; margin: 26px; width: 300px; }
+    .unused-r20 { color: gray;   font-size: 32px; margin: 28px; width: 400px; }
+    /* ... (hundreds more in a real bloated stylesheet) ... */
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">CSS</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn active-bad">✕ Bad</a>
+    <a href="good.html" class="toggle-btn">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-bad">BAD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag">FCP</span>
+      <span class="impact-tag">LCP</span>
+      <span class="impact-tag">TBT</span>
+    </div>
+  </div>
+  <h1>Render-Blocking CSS &amp; Layout Thrashing</h1>
+  <p class="page-desc">Two external render-blocking stylesheets (Bootstrap + Font Awesome), a ball animating with the <code>left</code> property that forces layout + paint every frame, <code>transition: all</code> on cards, and hundreds of unused CSS rules.</p>
+</div>
+
+<main class="scenario-main">
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo</div>
+
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem">
+      Ball animates with <code>left</code> property — triggers full layout + paint on every frame (check Performance tab for the pink "Layout" bars).
+    </p>
+
+    <!-- ✕ Ball using `left` animation — layout-thrashing -->
+    <div class="ball-track">
+      <div class="ball"></div>
+    </div>
+
+    <p style="font-size:.8125rem;color:var(--text-muted);margin:.75rem 0">
+      Cards use <code>transition: all</code> and <code>filter: drop-shadow</code> — hover to see the compositor cost:
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">
+      <div class="bad-card"><strong>Card A</strong><br><small style="color:var(--text-muted)">Hover me</small></div>
+      <div class="bad-card"><strong>Card B</strong><br><small style="color:var(--text-muted)">Hover me</small></div>
+      <div class="bad-card"><strong>Card C</strong><br><small style="color:var(--text-muted)">Hover me</small></div>
+    </div>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>❌ What's wrong</h3>
+      <ul>
+        <li data-i="⛔">Bootstrap (194KB) + Font Awesome (92KB) both render-blocking — browser cannot paint until both download and parse completely.</li>
+        <li data-i="⛔">Ball uses <code>left</code> CSS animation — not GPU-composited. Forces layout recalc + paint every frame at 60fps = 60 forced layouts per second.</li>
+        <li data-i="⛔"><code>transition: all</code> on cards animates every property including layout-triggering ones (width, height, padding).</li>
+        <li data-i="⛔"><code>filter: drop-shadow</code> prevents GPU compositing — the entire layer must be repainted on hover.</li>
+        <li data-i="⛔">20+ unused rules loaded and parsed on every visit (real codebases have thousands).</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>✅ How to fix → <a href="good.html" style="font-weight:400;font-size:.85em">good.html</a></h3>
+      <ul>
+        <li data-i="✓">Inline critical CSS — zero blocking requests, FCP is immediate.</li>
+        <li data-i="✓">Load non-critical CSS via <code>rel="preload" onload</code> pattern — deferred without blocking.</li>
+        <li data-i="✓">Animate with <code>transform: translateX()</code> + <code>will-change: transform</code> — runs entirely on GPU compositor thread.</li>
+        <li data-i="✓">Replace <code>transition: all</code> with explicit properties: <code>transition: border-color .2s, box-shadow .2s</code>.</li>
+        <li data-i="✓">Use <code>content-visibility: auto</code> on off-screen sections — skip paint entirely until needed.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-card">
+    <div class="code-card-header">✕ The Bad Code</div>
+    <div class="code-block">&lt;!-- ✕ Two render-blocking external stylesheets --&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"&gt;
+&lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"&gt;
+
+/* ✕ left animation — forces layout+paint per frame */
+@keyframes badBall {
+  0%   { left: 0; }
+  100% { left: calc(100% - 40px); }
+}
+
+/* ✕ transition: all — animates layout properties */
+.card {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.5));
+}</div>
+  </div>
+
+</main>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>

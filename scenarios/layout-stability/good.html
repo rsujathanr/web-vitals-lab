@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout Stability — Good | Web Vitals Lab</title>
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/metrics-overlay.css">
+  <style>
+    /* ✓ Aspect-ratio wrapper reserves exact space → images never cause CLS */
+    .product-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+    .product-card { background:var(--bg-surf); border-radius:var(--rsm); overflow:hidden; }
+    .product-img-wrap {
+      aspect-ratio: 4 / 3;
+      background: var(--bg-card); /* skeleton color */
+      overflow: hidden;
+    }
+    .product-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .product-card-body { padding:.75rem; font-size:.875rem; }
+
+    /* ✓ Ad slot has min-height: 90px from the start — filling it never shifts layout */
+    #ad-slot {
+      min-height: 90px;
+      background: rgba(99,102,241,.06);
+      border: 1px solid rgba(99,102,241,.2);
+      border-radius: var(--rsm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    #ad-placeholder { color:var(--text-muted); font-size:.75rem; transition: opacity .3s; }
+    #ad-content {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(99,102,241,.1);
+      opacity: 0;
+      transition: opacity .4s;
+    }
+
+    /* ✓ Cookie banner: position:fixed — overlays page, never shifts flow content */
+    #cookie-banner {
+      position: fixed;
+      bottom: 5rem; /* offset from metrics overlay */
+      left: 1.25rem;
+      right: 280px; /* leave room for metrics overlay */
+      background: #1e1a3a;
+      border: 1px solid rgba(99,102,241,.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: .875rem;
+      z-index: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      display: none; /* hidden until shown */
+    }
+    #cookie-banner.visible { display: flex; }
+    #cookie-banner button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--rsm);
+      padding: .4rem .9rem;
+      cursor: pointer;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="../../index.html" class="nav-logo">⚡ WVL</a>
+  <div class="nav-breadcrumb">
+    <a href="../../index.html">Scenarios</a>
+    <span class="sep">›</span>
+    <span class="crumb-current">Layout Stability</span>
+  </div>
+  <div class="nav-toggle">
+    <a href="bad.html"  class="toggle-btn">✕ Bad</a>
+    <a href="good.html" class="toggle-btn active-good">✓ Good</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-top">
+    <span class="badge badge-good">GOOD PATTERN</span>
+    <div class="impact-tags">
+      <span class="impact-tag down">CLS</span>
+    </div>
+  </div>
+  <h1>Stable Layout — CLS Near Zero</h1>
+  <p class="page-desc">Aspect-ratio wrappers on product images. Ad slot has <code>min-height: 90px</code> from the start — filling it never shifts content. Cookie banner uses <code>position: fixed</code> so it overlays the page instead of pushing it.</p>
+</div>
+
+<main class="scenario-main">
+
+  <!-- CLS counter -->
+  <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+      <div id="cls-display" style="font-size:1.5rem;font-weight:800;color:#4ade80">0.000</div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Cumulative Layout Shift</div>
+    </div>
+    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+      <div id="event-count" style="font-size:1.5rem;font-weight:800;color:#4ade80">0</div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Layout shift events</div>
+    </div>
+    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);padding:1rem;flex:1;min-width:120px">
+      <div id="next-event" style="font-size:1.5rem;font-weight:800;color:#4ade80">—</div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">CLS events expected</div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-label">Live Demo — watch nothing shift</div>
+
+    <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.7">
+      Images use aspect-ratio wrappers. The ad slot below has reserved space. A cookie banner appears at 2s using <code>position:fixed</code> — content stays put.
+    </p>
+
+    <!-- ✓ Product images: aspect-ratio wrapper reserves exact space → CLS = 0 -->
+    <div class="product-grid" style="margin-bottom:1rem">
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://picsum.photos/seed/clsg1a/400/300" width="400" height="300" alt="Product 1">
+        </div>
+        <div class="product-card-body"><strong>Product One</strong><br><span style="color:var(--text-muted)">$49.99</span></div>
+      </div>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://picsum.photos/seed/clsg1b/400/300" width="400" height="300" loading="lazy" alt="Product 2">
+        </div>
+        <div class="product-card-body"><strong>Product Two</strong><br><span style="color:var(--text-muted)">$79.99</span></div>
+      </div>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://picsum.photos/seed/clsg1c/400/300" width="400" height="300" loading="lazy" alt="Product 3">
+        </div>
+        <div class="product-card-body"><strong>Product Three</strong><br><span style="color:var(--text-muted)">$29.99</span></div>
+      </div>
+    </div>
+
+    <!-- ✓ Ad slot: min-height reserved from the start — no shift when filled -->
+    <div id="ad-slot">
+      <div id="ad-placeholder">Ad space reserved (90px min-height)</div>
+      <div id="ad-content">
+        <div style="text-align:center">
+          <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.25rem">ADVERTISEMENT</div>
+          <div style="font-weight:700">Ad loaded — zero layout shift ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:.875rem;line-height:1.7">
+      This text does not move. The ad slot had <code>min-height: 90px</code> from initial render,
+      so filling it changed nothing. The cookie banner is <code>position: fixed</code>.
+    </p>
+  </div>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <h3>✅ What's fixed</h3>
+      <ul>
+        <li data-i="✓"><code>aspect-ratio: 4/3</code> wrapper on every product image — browser reserves the exact pixel area before the image bytes arrive.</li>
+        <li data-i="✓">Ad slot has <code>min-height: 90px</code> in initial CSS — when the ad loads, the container is already the right size.</li>
+        <li data-i="✓">Cookie banner is <code>position: fixed</code> — it overlays the viewport without affecting document flow at all.</li>
+        <li data-i="✓">CLS measured live above — watch it stay at 0.000 throughout the demo.</li>
+      </ul>
+    </div>
+    <div class="exp-card">
+      <h3>📐 Before → After</h3>
+      <ul>
+        <li data-i="→"><code>&lt;img&gt;</code> no dims → <code>aspect-ratio</code> wrapper + <code>width/height</code></li>
+        <li data-i="→">Ad slot <code>height: 0</code> → <code>min-height: 90px</code></li>
+        <li data-i="→">Cookie in page flow → <code>position: fixed</code></li>
+        <li data-i="→">CLS ~0.35 → CLS ~0.000</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<!-- ✓ Cookie banner: position fixed (in DOM from start, shown/hidden by class) -->
+<div id="cookie-banner">
+  <span>We use cookies to improve your experience. <em style="color:var(--text-muted);font-style:normal;font-size:.8em">(position: fixed — no layout shift)</em></span>
+  <button onclick="document.getElementById('cookie-banner').classList.remove('visible')">Accept</button>
+</div>
+
+<script>
+  var clsTotal = 0;
+  var events   = 0;
+
+  try {
+    new PerformanceObserver(function(list) {
+      list.getEntries().forEach(function(e) {
+        if (!e.hadRecentInput) {
+          clsTotal += e.value;
+          events++;
+          document.getElementById('cls-display').textContent  = clsTotal.toFixed(3);
+          document.getElementById('event-count').textContent  = events;
+        }
+      });
+    }).observe({ type: 'layout-shift', buffered: true });
+  } catch(err) {}
+
+  document.getElementById('next-event').textContent = '0';
+
+  // ✓ Ad: fade into reserved slot — no layout shift
+  setTimeout(function() {
+    document.getElementById('ad-placeholder').style.opacity = '0';
+    document.getElementById('ad-content').style.opacity = '1';
+  }, 1500);
+
+  // ✓ Cookie banner: position:fixed appears — zero layout shift
+  setTimeout(function() {
+    document.getElementById('cookie-banner').classList.add('visible');
+  }, 2000);
+</script>
+
+<script src="../../js/metrics.js"></script>
+</body>
+</html>
