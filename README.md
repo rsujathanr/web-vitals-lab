@@ -1,25 +1,33 @@
 # ⚡ Web Vitals Lab
 
-> Interactive lab demonstrating Core Web Vitals anti-patterns and fixes across 8 real-world performance scenarios, with live metrics overlay.
+> Interactive lab demonstrating Core Web Vitals anti-patterns and fixes across 8 real-world performance scenarios, with a live metrics overlay.
 
 🌐 **Live Site:** https://rsujathanr.github.io/web-vitals-lab/
 
 ---
 
+## What is this?
+
+Each scenario has two pages:
+- 🔴 **bad.html** — deliberately broken with real-world anti-patterns
+- 🟢 **good.html** — fixed with production-grade optimizations
+
+Every page shows a live floating metrics panel (bottom-right) powered by [`web-vitals`](https://github.com/GoogleChrome/web-vitals), reporting all 6 metrics in real time.
+
+---
+
 ## Scenarios
 
-| # | Scenario | Metrics Impacted |
-|---|----------|-----------------|
-| 1 | 🖼️ Images | LCP, CLS, TBT |
-| 2 | ⚙️ JavaScript | INP, TBT, FCP |
-| 3 | 🎨 CSS | FCP, LCP, TBT |
-| 4 | 🔤 Fonts | CLS, FCP, LCP |
-| 5 | 📐 Layout Stability | CLS |
-| 6 | 🌐 Network & Resource Hints | TTFB, LCP, FCP |
-| 7 | 💾 Caching | TTFB, LCP |
-| 8 | 🔌 Third-Party Scripts | TBT, FCP, INP, LCP |
-
-Each scenario has a `bad.html` (anti-patterns with live proof) and `good.html` (production-grade fixes).
+| # | Scenario | Anti-Patterns Demonstrated | Metrics |
+|---|----------|---------------------------|---------|
+| 1 | 🖼️ [Images](scenarios/images/) | CSS background hero, missing dimensions, no lazy load | LCP, CLS, TBT |
+| 2 | ⚙️ [JavaScript](scenarios/javascript/) | Render-blocking scripts, 2s sync tasks, no debounce | INP, TBT, FCP |
+| 3 | 🎨 [CSS](scenarios/css/) | Blocking stylesheets, `left` animation, `transition:all` | FCP, LCP, TBT |
+| 4 | 🔤 [Fonts](scenarios/fonts/) | All 9 weights, `display=block` FOIT, no preconnect | CLS, FCP, LCP |
+| 5 | 📐 [Layout Stability](scenarios/layout-stability/) | Images without dimensions, late ad slots, shifting banners | CLS |
+| 6 | 🌐 [Network](scenarios/network/) | No preconnect, dns-prefetch, or prefetch hints | TTFB, LCP, FCP |
+| 7 | 💾 [Caching](scenarios/caching/) | `no-store` headers, no content hashing, no service worker | TTFB, LCP |
+| 8 | 🔌 [Third-Party](scenarios/third-party/) | Sync analytics, eager YouTube iframe, eager chat SDK | TBT, FCP, INP, LCP |
 
 ---
 
@@ -36,71 +44,11 @@ Each scenario has a `bad.html` (anti-patterns with live proof) and `good.html` (
 
 ---
 
-## Lighthouse Scores
-
-### Images
-| | Bad | Good |
-|--|-----|------|
-| Performance | <!-- bad-images-score --> | <!-- good-images-score --> |
-| LCP | <!-- bad-images-lcp --> | <!-- good-images-lcp --> |
-| CLS | <!-- bad-images-cls --> | <!-- good-images-cls --> |
-| Screenshot | ![Bad](docs/screenshots/images-bad.png) | ![Good](docs/screenshots/images-good.png) |
-
-### JavaScript
-| | Bad | Good |
-|--|-----|------|
-| Performance | <!-- bad-js-score --> | <!-- good-js-score --> |
-| TBT | <!-- bad-js-tbt --> | <!-- good-js-tbt --> |
-| INP | <!-- bad-js-inp --> | <!-- good-js-inp --> |
-| Screenshot | ![Bad](docs/screenshots/javascript-bad.png) | ![Good](docs/screenshots/javascript-good.png) |
-
-### CSS
-| | Bad | Good |
-|--|-----|------|
-| Performance | <!-- bad-css-score --> | <!-- good-css-score --> |
-| FCP | <!-- bad-css-fcp --> | <!-- good-css-fcp --> |
-| Screenshot | ![Bad](docs/screenshots/css-bad.png) | ![Good](docs/screenshots/css-good.png) |
-
-### Fonts
-| | Bad | Good |
-|--|-----|------|
-| Performance | <!-- bad-fonts-score --> | <!-- good-fonts-score --> |
-| CLS | <!-- bad-fonts-cls --> | <!-- good-fonts-cls --> |
-| Screenshot | ![Bad](docs/screenshots/fonts-bad.png) | ![Good](docs/screenshots/fonts-good.png) |
-
-### Layout Stability
-| | Bad | Good |
-|--|-----|------|
-| CLS | <!-- bad-layout-cls --> | <!-- good-layout-cls --> |
-| Screenshot | ![Bad](docs/screenshots/layout-stability-bad.png) | ![Good](docs/screenshots/layout-stability-good.png) |
-
-### Network
-| | Bad | Good |
-|--|-----|------|
-| Performance | <!-- bad-network-score --> | <!-- good-network-score --> |
-| TTFB | <!-- bad-network-ttfb --> | <!-- good-network-ttfb --> |
-| Screenshot | ![Bad](docs/screenshots/network-bad.png) | ![Good](docs/screenshots/network-good.png) |
-
-### Caching
-| | Bad | Good |
-|--|-----|------|
-| Performance | <!-- bad-caching-score --> | <!-- good-caching-score --> |
-| Screenshot | ![Bad](docs/screenshots/caching-bad.png) | ![Good](docs/screenshots/caching-good.png) |
-
-### Third-Party Scripts
-| | Bad | Good |
-|--|-----|------|
-| Performance | <!-- bad-third-party-score --> | <!-- good-third-party-score --> |
-| TBT | <!-- bad-third-party-tbt --> | <!-- good-third-party-tbt --> |
-| Screenshot | ![Bad](docs/screenshots/third-party-bad.png) | ![Good](docs/screenshots/third-party-good.png) |
-
----
-
 ## How to Measure
 
-**Live overlay** — every scenario page has a floating metrics panel (bottom-right) powered by [`web-vitals`](https://github.com/GoogleChrome/web-vitals). Interact with the page to trigger INP, scroll to finalize LCP and CLS.
+**Live overlay** — every page has a draggable metrics panel. Interact with the page to trigger INP, scroll to finalize LCP and CLS.
 
-**Lighthouse** — open Chrome DevTools → Lighthouse tab → Performance → Analyze page load. Compare bad vs good scores.
+**Lighthouse** — DevTools → Lighthouse tab → Performance → Analyze page load. Compare bad vs good scores side by side.
 
 **PageSpeed Insights** — paste any scenario URL at [pagespeed.web.dev](https://pagespeed.web.dev).
 
@@ -111,7 +59,7 @@ Each scenario has a `bad.html` (anti-patterns with live proof) and `good.html` (
 ## Stack
 
 - Pure HTML / CSS / JS — no framework, no build step
-- [`web-vitals`](https://github.com/GoogleChrome/web-vitals) v4 via CDN
+- [`web-vitals`](https://github.com/GoogleChrome/web-vitals) v4 via unpkg CDN
 - Hosted on GitHub Pages
 - Images from [picsum.photos](https://picsum.photos)
 
